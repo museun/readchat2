@@ -5,7 +5,7 @@ use cursive::{
     Cursive, View,
 };
 
-use crate::{entry::Entry, state::AppState, ui::*, Config};
+use crate::{entry::Entry, get_config, ui::*, Config};
 
 pub struct App;
 impl App {
@@ -43,7 +43,7 @@ impl App {
 
     #[track_caller]
     pub fn append_entry(cursive: &mut Cursive, entry: Entry) {
-        fn append<V>(lv: &mut ScrollableList, view: Option<V>, config: &Config)
+        fn append<V>(lv: &mut ScrollableList, view: Option<V>)
         where
             V: View,
         {
@@ -54,25 +54,27 @@ impl App {
                 }
             }
 
-            std::array::IntoIter::new([("timestamp", config.timestamps), ("badge", config.badges)])
-                .for_each(|(k, v)| {
-                    lv.call_on_all(&Selector::Name(k), |view: &mut HideableView<TextView>| {
-                        view.set_visible(v)
-                    });
+            let Config {
+                timestamps, badges, ..
+            } = *get_config();
+
+            std::array::IntoIter::new([
+                ("timestamp", timestamps), //
+                ("badge", badges),
+            ])
+            .for_each(|(k, v)| {
+                lv.call_on_all(&Selector::Name(k), |view: &mut HideableView<TextView>| {
+                    view.set_visible(v)
                 });
+            });
         }
 
-        let app_state = cursive
-            .user_data::<AppState>()
-            .expect("app state must be in the tree")
-            .clone();
-
         MessagesView::with(cursive).on(|view| {
-            append(view, entry.as_message_view(&*app_state), &*app_state);
+            append(view, entry.as_message_view());
         });
 
         LinksView::with(cursive).on(|view| {
-            append(view, entry.as_links_view(&*app_state), &*app_state);
+            append(view, entry.as_links_view());
         });
     }
 
@@ -115,13 +117,12 @@ impl FindView for Cursive {
         T: View,
         F: Fn(&mut Config) -> &mut bool,
     {
-        let mut state = self
-            .user_data::<AppState>()
-            .expect("appstate must be in the tree");
-        let config = std::sync::Arc::get_mut(&mut state).expect("no outstanding clones");
-        let show = extract(config);
-        *show = !*show;
-        let show = *show;
+        let show = {
+            let config = &mut *get_config();
+            let show = extract(config);
+            *show = !*show;
+            *show
+        };
         self.call_on_all_named(key, |view: &mut HideableView<T>| view.set_visible(show))
     }
 }

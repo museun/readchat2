@@ -9,7 +9,7 @@ use cursive::{
 
 use twitchchat::{messages::Privmsg, twitch::BadgeKind};
 
-use crate::{ui::SpannedAppender, Config, ConfigBadges};
+use crate::{get_config, ui::SpannedAppender, Config, ConfigBadges};
 
 /// NOTE: this must remain in this order for Iterator::max to work
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
@@ -28,7 +28,7 @@ pub enum Badge {
 }
 
 impl Badge {
-    fn as_spanned_string(&self, config: &Config) -> SpannedString<cursive::theme::Style> {
+    fn as_spanned_string(&self) -> SpannedString<cursive::theme::Style> {
         let ConfigBadges {
             partner,
             vip,
@@ -41,7 +41,7 @@ impl Badge {
             global_mod,
             staff,
             admin,
-        } = config.colors.badges;
+        } = get_config().colors.badges;
 
         match self {
             Self::Partner => SpannedString::styled("partner", partner),
@@ -87,56 +87,54 @@ pub struct Entry {
 }
 
 impl Entry {
-    pub(crate) fn as_header_view(entry: &Self, config: &Config) -> impl View {
-        let ts = SpannedString::styled(
-            // XXX: cursive is still calculating the width of the scrollbar even
-            // if its been disabled, so instead of forking it to fix that
-            // padding issue, we'll just adding our own padding so the scrollbar
-            // can still be rendered and not resize the elements in the
-            // LinearView
-            entry
-                .ts
-                .format(&format!("{} ", &config.timestamp_fmt))
-                .to_string(),
-            config.colors.timestamp,
-        );
+    pub(crate) fn as_header_view(entry: &Self) -> impl View {
+        let ts = {
+            let Config {
+                timestamp_fmt,
+                colors,
+                ..
+            } = &*get_config();
+
+            SpannedString::styled(
+                // XXX: cursive is still calculating the width of the scrollbar even
+                // if its been disabled, so instead of forking it to fix that
+                // padding issue, we'll just adding our own padding so the scrollbar
+                // can still be rendered and not resize the elements in the
+                // LinearView
+                entry.ts.format(&format!("{} ", timestamp_fmt)).to_string(),
+                colors.timestamp,
+            )
+        };
 
         let left = {
-            let mut sub = LinearLayout::new(Orientation::Horizontal).child(
-                TextView::new(SpannedString::styled(&*entry.name.trim(), entry.color))
-                    .no_wrap()
-                    .full_width(),
-            );
-
+            let name = SpannedString::styled(&*entry.name.trim(), entry.color);
+            let tv = TextView::new(name).no_wrap().full_width();
+            let mut sub = LinearLayout::new(Orientation::Horizontal).child(tv);
             if let Some(badge) = entry.badge {
-                sub.add_child(
-                    HideableView::new(TextView::new(
-                        badge.as_spanned_string(config).append_plain(" "),
-                    ))
-                    .with_name("badge"),
-                )
+                let tv = TextView::new(badge.as_spanned_string().append_plain(" "));
+                sub.add_child(HideableView::new(tv).with_name("badge"))
             }
-
             sub
         };
 
-        let right = HideableView::new(TextView::new(ts).no_wrap()).with_name("timestamp");
+        let tv = TextView::new(ts).no_wrap();
+        let right = HideableView::new(tv).with_name("timestamp");
 
         LinearLayout::new(Orientation::Horizontal)
             .child(left)
             .child(right)
     }
 
-    pub(crate) fn as_message_view(&self, app_state: &Config) -> Option<impl View> {
+    pub(crate) fn as_message_view(&self) -> Option<impl View> {
         Some(
             LinearLayout::new(Orientation::Vertical)
-                .child(Self::as_header_view(self, app_state))
+                .child(Self::as_header_view(self))
                 .child(TextView::new(&*self.data))
                 .child(TextView::new("\n")),
         )
     }
 
-    pub(crate) fn as_links_view(&self, app_state: &Config) -> Option<impl View> {
+    pub(crate) fn as_links_view(&self) -> Option<impl View> {
         if !self.contains_links() {
             return None;
         }
@@ -144,8 +142,7 @@ impl Entry {
         Some(
             self.find_links()
                 .fold(
-                    LinearLayout::new(Orientation::Vertical)
-                        .child(Self::as_header_view(self, app_state)),
+                    LinearLayout::new(Orientation::Vertical).child(Self::as_header_view(self)),
                     |layout, link| layout.child(TextView::new(&*link).full_width()),
                 )
                 .child(TextView::new("\n"))

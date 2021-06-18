@@ -15,7 +15,7 @@ use once_cell::sync::Lazy;
 mod limited_list_view;
 use limited_list_view::LimitedListView;
 
-use crate::App;
+use crate::{get_config, App, Tabs};
 
 fn next_unique_name() -> String {
     const PREFIX: &str = env!("CARGO_PKG_NAME");
@@ -210,21 +210,23 @@ struct Tab<'s> {
 
 impl<'s> Tab<'s> {
     fn as_styled_string(&self, focused: bool) -> SpannedString<Style> {
+        let Tabs { active, inactive } = get_config().tabs;
+
         if !focused {
             return SpannedString::default()
-                .append_plain(" ")
-                .append_plain(self.index.to_string())
-                .append_plain(".")
-                .append_plain(self.text)
-                .append_plain(" ");
+                .append(" ", inactive)
+                .append(self.index.to_string(), inactive)
+                .append(".", inactive)
+                .append(self.text, inactive)
+                .append(" ", inactive);
         }
 
         SpannedString::default()
-            .reversed(" ")
-            .reversed(self.index.to_string())
-            .reversed(".")
-            .reversed(self.text)
-            .reversed(" ")
+            .append(" ", active)
+            .append(self.index.to_string(), active)
+            .append(".", active)
+            .append(self.text, active)
+            .append(" ", active)
     }
 }
 

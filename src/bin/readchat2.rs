@@ -1,5 +1,5 @@
 #![cfg_attr(debug_assertions, allow(dead_code,))]
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use readchat2::*;
 
@@ -48,14 +48,13 @@ FLAGS:
     }
 }
 
-fn new_cursive(config: Config) -> cursive::CursiveRunnable {
+fn new_cursive() -> cursive::CursiveRunnable {
     let mut cursive = cursive::default();
     cursive.set_theme(colors::sensible_theme());
     cursive.add_fullscreen_layer(build_ui());
     cursive
         .focus_name(MessagesView::name())
         .expect("MessageView should be in the tree");
-    cursive.set_user_data(Arc::new(config));
     cursive
 }
 
@@ -109,7 +108,11 @@ fn main() -> anyhow::Result<()> {
 
     assert!(!channel.is_empty(), "channel shouldn't be empty");
 
-    let mut cursive = new_cursive(config);
+    readchat2::CONFIG
+        .set(Arc::new(Mutex::new(config)))
+        .expect("single initialization of the global configuration");
+
+    let mut cursive = new_cursive();
     cursive.set_global_callback('q', App::quit);
 
     cursive.set_global_callback('0', App::focus_status_view);

@@ -10,9 +10,11 @@ mod ui;
 pub use ui::{build_ui, MessagesView, OnView};
 
 mod state;
-pub use state::AppState;
+pub use state::{get_config, CONFIG};
 
 mod config;
-pub use config::{Badges as ConfigBadges, Color as ConfigColor, Config, Style as ConfigStyle};
+pub use config::{
+    Badges as ConfigBadges, Color as ConfigColor, Config, Style as ConfigStyle, Tabs,
+};
 
 mod entry;

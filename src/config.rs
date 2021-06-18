@@ -1,11 +1,12 @@
 use anyhow::Context as _;
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Config {
     pub channel: Option<String>,
     pub timestamps: bool,
     pub badges: bool,
     pub timestamp_fmt: String,
+    pub tabs: Tabs,
     pub colors: Colors,
 }
 
@@ -16,6 +17,7 @@ impl Default for Config {
             timestamps: true,
             badges: true,
             timestamp_fmt: "%X".into(),
+            tabs: Tabs::default(),
             colors: Colors::default(),
         }
     }
@@ -46,21 +48,25 @@ timestamp_fmt = "%X"
 # syntax  { fg = "#hex"   , bg = "#hex" , bold = bool }
 # default { fg = "#FFFFFF", bg = <unset>, bold = false }
 
+[tabs]
+active   = "#FF0000"
+inactive = "#FFFFFF"
+
 [colors.timestamp]
-fg = "#FF00FF"
+fg = "#FFFF00"
 
 [colors.badges]
-admin       = { fg = "#FFFFFF" }
-bits        = { fg = "#FFFFFF" }
+admin       = "#FFFFFF"
+bits        = "#FFFFFF"
 broadcaster = { fg = "#FF0000", bold = true }
-global_mod  = { fg = "#FFFFFF" }
-moderator   = { fg = "#FFC0CB" }
-partner     = { fg = "#FFFFFF" }
-premium     = { fg = "#FFFFFF" }
-staff       = { fg = "#FFFFFF" }
-subscriber  = { fg = "#FF0000" }
-turbo       = { fg = "#FFFFFF" }
-vip         = { fg = "#FFFFFF" }
+global_mod  = "#FFFFFF"
+moderator   = "#FFC0CB"
+partner     = "#FFFFFF"
+premium     = "#FFFFFF"
+staff       = "#FFFFFF"
+subscriber  = "#FF0000"
+turbo       = "#FFFFFF"
+vip         = "#FFFFFF"
         "##
     }
 }
@@ -80,6 +86,29 @@ impl Default for Colors {
                 bold: false,
             },
             badges: Badges::default(),
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct Tabs {
+    pub active: Style,
+    pub inactive: Style,
+}
+
+impl Default for Tabs {
+    fn default() -> Self {
+        Self {
+            active: Style {
+                fg: Color(0xFF, 0x00, 0x00),
+                bg: None,
+                bold: false,
+            },
+            inactive: Style {
+                fg: Color(0xFF, 0xFF, 0xFF),
+                bg: None,
+                bold: false,
+            },
         }
     }
 }
@@ -128,6 +157,7 @@ impl Default for Badges {
     }
 }
 
+// TODO support effects
 #[derive(Copy, Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Style {
     #[serde(default = "Color::default_fg")]
