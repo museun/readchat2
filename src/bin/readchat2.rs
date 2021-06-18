@@ -4,7 +4,7 @@ use std::sync::Arc;
 use readchat2::*;
 
 pub struct Args {
-    channel: String,
+    channel: Option<String>,
 }
 
 impl Args {
@@ -43,18 +43,7 @@ FLAGS:
             std::process::exit(0);
         }
 
-        let channel = match args.finish().as_slice() {
-            [channel] => channel.to_string_lossy().to_string(),
-            [] => {
-                eprintln!("please provide a channel: readchat <channel>");
-                std::process::exit(1);
-            }
-            _ => {
-                eprintln!("only provide a single channel: readchat <channel>");
-                std::process::exit(1);
-            }
-        };
-
+        let channel = args.finish().pop().map(|s| s.to_string_lossy().to_string());
         Ok(Self { channel })
     }
 }
@@ -105,7 +94,20 @@ fn main() -> anyhow::Result<()> {
         Err(err) => return Err(err.into()),
     };
 
-    let channel = config.channel.clone().unwrap_or_else(|| channel);
+    let channel = match (
+        channel.filter(|s| !s.is_empty()),
+        config.channel.clone().filter(|s| !s.is_empty()),
+    ) {
+        (Some(left), ..) => left,
+        (.., Some(right)) => right,
+        _ => {
+            eprintln!("please provide a channel: readchat2 <channel>");
+            eprintln!("alternatively add it to the configuration file");
+            std::process::exit(1);
+        }
+    };
+
+    assert!(!channel.is_empty(), "channel shouldn't be empty");
 
     let mut cursive = new_cursive(config);
     cursive.set_global_callback('q', App::quit);
