@@ -1,6 +1,5 @@
 /target
 *.log
-*.txt
 *.json
 *.html
 config.toml
