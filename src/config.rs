@@ -5,6 +5,7 @@ pub struct Config {
     pub channel: Option<String>,
     pub timestamps: bool,
     pub badges: bool,
+    pub timestamp_fmt: String,
     pub colors: Colors,
 }
 
@@ -14,6 +15,7 @@ impl Default for Config {
             channel: None,
             timestamps: true,
             badges: true,
+            timestamp_fmt: "%X".into(),
             colors: Colors::default(),
         }
     }
@@ -36,9 +38,10 @@ impl Config {
 
     pub const fn default_config() -> &'static str {
         r##"
-channel    = "#museun"
-timestamps = true
-badges     = true
+channel       = "#museun"
+timestamps    = true
+badges        = true
+timestamp_fmt = "%X"
 
 # syntax  { fg = "#hex"   , bg = "#hex" , bold = bool }
 # default { fg = "#FFFFFF", bg = <unset>, bold = false }

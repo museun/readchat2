@@ -94,7 +94,10 @@ impl Entry {
             // padding issue, we'll just adding our own padding so the scrollbar
             // can still be rendered and not resize the elements in the
             // LinearView
-            entry.ts.format("%X ").to_string(),
+            entry
+                .ts
+                .format(&format!("{} ", &config.timestamp_fmt))
+                .to_string(),
             config.colors.timestamp,
         );
 
