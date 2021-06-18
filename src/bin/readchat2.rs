@@ -10,7 +10,16 @@ pub struct Args {
 impl Args {
     const HEADER: &'static str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
 
-    const SHORT_HELP: &'static str = include_str!("../../etc/short_help.txt");
+    const SHORT_HELP: &'static str = r#"
+USAGE:
+    readchat2 [flags] <channel>
+
+FLAGS:
+    -h, --help                  show the help messages
+    -v, --version               show the current version
+    --print-default-config      print the default toml configuration
+    --print-config-path         print the default configuration path
+    "#;
 
     pub fn parse() -> anyhow::Result<Self> {
         let mut args = pico_args::Arguments::from_env();

@@ -1,8 +1,0 @@
-USAGE:
-    readchat2 [flags] <channel>
-
-FLAGS:
-    -h, --help                  show the help messages
-    -v, --version               show the current version
-    --print-default-config      print the default toml configuration
-    --print-config-path         print the default configuration path

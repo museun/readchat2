@@ -7,8 +7,6 @@ pub use state::AppState;
 pub mod colors;
 pub mod entry;
 pub mod panic_logger;
-// pub mod simulated;
-// pub mod testing;
 pub mod twitch;
 
 mod config;
