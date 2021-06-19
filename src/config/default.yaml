@@ -1,0 +1,87 @@
+# syntax  { fg = "#hex"   , bg = "#hex" , bold = bool }
+# default { fg = "#FFFFFF", bg = <unset>, bold = false }
+
+channel: ~
+timestamps: true
+badges: true
+timestamp_fmt: "%X"
+
+tabs:
+  active:
+    fg: "#FF0000"
+    bg: ~
+    effects: ~
+  inactive:
+    fg: "#FFFFFF"
+    bg: ~
+    effects: ~
+
+colors:
+  timestamp:
+    fg: "#FF00FF"
+    bg: ~
+    effects: ~
+  badges:
+    admin:
+      fg: "#FFFFFF"
+      bg: ~
+      effects: ~
+    bits:
+      fg: "#FFFFFF"
+      bg: ~
+      effects: ~
+    broadcaster:
+      fg: "#FF0000"
+      bg: ~
+      effects: bold
+    global_mod:
+      fg: "#FFFFFF"
+      bg: ~
+      effects: ~
+    moderator:
+      fg: "#FFFFFF"
+      bg: ~
+      effects: ~
+    partner:
+      fg: "#FFFFFF"
+      bg: ~
+      effects: ~
+    premium:
+      fg: "#FFFFFF"
+      bg: ~
+      effects: ~
+    staff:
+      fg: "#FFFFFF"
+      bg: ~
+      effects: ~
+    subscriber:
+      fg: "#FF0000"
+      bg: ~
+      effects: ~
+    turbo:
+      fg: "#FFFFFF"
+      bg: ~
+      effects: ~
+    vip:
+      fg: "#FFFFFF"
+      bg: ~
+      effects: ~
+
+highlights:
+  mentions:
+    fg: "#FF0000"
+    bg: ~
+    effects: bold
+  keywords:
+    - name: Rust
+      case_sensitive: false
+      style:
+        fg: "#F57C00"
+        bg: ~
+        effects: bold
+    - name: Twitch
+      case_sensitive: true
+      style:
+        fg: "#9146FF"
+        bg: ~
+        effects: bold
