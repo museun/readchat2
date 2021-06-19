@@ -80,6 +80,10 @@ impl App {
         LinksView::with(cursive).on(|view| {
             append(view, entry.as_links_view());
         });
+
+        HighlightsView::with(cursive).on(|view| {
+            append(view, entry.as_highlights_view());
+        })
     }
 
     pub fn on_ping(cursive: &mut Cursive) {

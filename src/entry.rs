@@ -152,6 +152,10 @@ impl Entry {
             .any(|url| matches!(url.scheme(), "http" | "https"))
     }
 
+    pub(crate) fn as_highlights_view(&self) -> Option<impl View> {
+        Option::<DummyView>::None
+    }
+
     pub(crate) fn contains_keywords(&self) -> bool {
         let crate::config::Highlights { keywords, .. } = &get_config().highlights;
 
