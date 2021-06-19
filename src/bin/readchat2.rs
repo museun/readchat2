@@ -52,7 +52,7 @@ fn new_cursive() -> cursive::CursiveRunnable {
     cursive.set_theme(colors::sensible_theme());
     cursive.add_fullscreen_layer(build_ui());
     cursive
-        .focus_name(MessagesView::name())
+        .focus_name(ui::MessagesView::name())
         .expect("MessageView should be in the tree");
     cursive
 }

@@ -7,7 +7,7 @@ pub struct Config {
     pub timestamps: bool,
     pub badges: bool,
     pub timestamp_fmt: String,
-    pub tabs: Tabs,
+    pub tabs: TabsConfig,
     pub colors: Colors,
     pub highlights: Highlights,
 }
@@ -19,7 +19,7 @@ impl Default for Config {
             timestamps: true,
             badges: true,
             timestamp_fmt: "%X".into(),
-            tabs: Tabs::default(),
+            tabs: TabsConfig::default(),
             colors: Colors::default(),
             highlights: Highlights::default(),
         }
@@ -151,12 +151,12 @@ impl Default for Colors {
 }
 
 #[derive(Copy, Clone, Debug, serde::Serialize, serde::Deserialize)]
-pub struct Tabs {
+pub struct TabsConfig {
     pub active: Style,
     pub inactive: Style,
 }
 
-impl Default for Tabs {
+impl Default for TabsConfig {
     fn default() -> Self {
         Self {
             active: Style::fg(Color(0xFF, 0x00, 0x00)),
@@ -221,7 +221,7 @@ impl Style {
             ..Self::default()
         }
     }
-    pub fn with_effects(self, effects: Effects) -> Self {
+    pub const fn with_effects(self, effects: Effects) -> Self {
         Self { effects, ..self }
     }
 }
@@ -372,7 +372,7 @@ impl From<Style> for cursive::theme::Style {
 
 impl From<Effects> for cursive::theme::Style {
     fn from(effects: Effects) -> Self {
-        cursive::theme::Style {
+        Self {
             effects: effects
                 .into_iter()
                 .zip([
