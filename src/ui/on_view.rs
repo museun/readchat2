@@ -24,6 +24,7 @@ pub trait OnView<'c>: Sized + 'c {
     }
 }
 
+// TODO get rid of this macro
 #[macro_export]
 macro_rules! on_view {
     ($name:ident => $view:ty) => {

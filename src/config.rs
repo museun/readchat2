@@ -1,5 +1,26 @@
 use anyhow::Context as _;
 
+mod colors;
+pub use colors::Colors;
+
+mod tabs;
+pub use tabs::Tabs;
+
+mod badges;
+pub use badges::Badges;
+
+mod style;
+pub use style::Style;
+
+mod effects;
+pub use effects::Effects;
+
+mod color;
+pub use color::Color;
+
+mod highlights;
+pub use highlights::{Highlights, Keyword};
+
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Config {
     pub channel: Option<String>,
@@ -12,15 +33,19 @@ pub struct Config {
 }
 
 impl Default for Config {
+    // TODO this should maybe default from the file to ensure they are in sync
     fn default() -> Self {
+        let (channel, tabs, colors, highlights) = <_>::default();
+
         Self {
-            channel: None,
             timestamps: true,
             badges: true,
             timestamp_fmt: "%X".into(),
-            tabs: Tabs::default(),
-            colors: Colors::default(),
-            highlights: Highlights::default(),
+
+            channel,
+            tabs,
+            colors,
+            highlights,
         }
     }
 }
@@ -45,24 +70,3 @@ impl Config {
         include_str!("./config/default.yaml")
     }
 }
-
-mod colors;
-pub use colors::Colors;
-
-mod tabs;
-pub use tabs::Tabs;
-
-mod badges;
-pub use badges::Badges;
-
-mod style;
-pub use style::Style;
-
-mod effects;
-pub use effects::Effects;
-
-mod color;
-pub use color::Color;
-
-mod highlights;
-pub use highlights::{Highlights, Keyword};

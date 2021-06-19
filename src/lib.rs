@@ -1,4 +1,4 @@
-#![cfg_attr(any(debug_assertions, test), allow(dead_code, unused_variables,))]
+#![cfg_attr(debug_assertions, allow(dead_code,))]
 
 pub mod colors;
 

@@ -9,13 +9,13 @@ pub struct Highlights {
 impl Default for Highlights {
     fn default() -> Self {
         let keywords = std::array::IntoIter::new([
-            ("Rust", false, Color(0xf5, 0x7c, 0x00), true),
-            ("Twitch", true, Color(0x91, 0x46, 0xff), false),
+            ("Rust", false, Color(0xf5, 0x7c, 0x00), Effects::bold()),
+            ("Twitch", true, Color(0x91, 0x46, 0xff), Effects::empty()),
         ])
-        .map(|(n, case_sensitive, fg, bold)| Keyword {
+        .map(|(n, case_sensitive, fg, effects)| Keyword {
             name: n.to_string(),
             case_sensitive,
-            style: Style::fg(fg).with_effects(Effects::bold()),
+            style: Style::fg(fg).with_effects(effects),
         })
         .collect();
 
