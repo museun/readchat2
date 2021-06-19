@@ -9,8 +9,8 @@ pub struct Tabs {
 impl Default for Tabs {
     fn default() -> Self {
         Self {
-            active: Style::fg(Color(0xFF, 0x00, 0x00)),
-            inactive: Style::fg(Color(0xFF, 0xFF, 0xFF)),
+            active: Style::fg(Color::RED),
+            inactive: Style::fg(Color::WHITE),
         }
     }
 }

@@ -10,8 +10,14 @@ impl Default for Color {
 }
 
 impl Color {
+    pub(crate) const RED: Self = Self(0xFF, 0x00, 0x00);
+    pub(crate) const WHITE: Self = Self(0xFF, 0xFF, 0xFF);
+    pub(crate) const MAGENTA: Self = Self(0xFF, 0x00, 0xFF);
+    pub(crate) const RUSTACEAN_ORANGE: Self = Self(0xf5, 0x7c, 0x00);
+    pub(crate) const TWITCH_PURPLE: Self = Self(0x91, 0x46, 0xff);
+
     pub(crate) const fn default_fg() -> Self {
-        Self(0xFF, 0xFF, 0xFF)
+        Self::WHITE
     }
 }
 

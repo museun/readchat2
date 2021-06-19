@@ -9,7 +9,7 @@ pub struct Colors {
 impl Default for Colors {
     fn default() -> Self {
         Self {
-            timestamp: Style::fg(Color(0xFF, 0x00, 0xFF)),
+            timestamp: Style::fg(Color::MAGENTA),
             badges: Badges::default(),
         }
     }

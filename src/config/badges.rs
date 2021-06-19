@@ -21,8 +21,8 @@ impl Default for Badges {
             <_>::default();
 
         Self {
-            broadcaster: Style::fg(Color(0xFF, 0x00, 0x00)).with_effects(Effects::bold()),
-            subscriber: Style::fg(Color(0xFF, 0x00, 0x00)),
+            broadcaster: Style::fg(Color::RED).with_effects(Effects::bold()),
+            subscriber: Style::fg(Color::RED),
             admin,
             bits,
             global_mod,
