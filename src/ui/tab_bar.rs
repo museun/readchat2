@@ -1,8 +1,5 @@
-use super::OnView;
-use super::SpannedAppender as _;
-use crate::{get_config, TabsConfig};
-
-use cursive::{theme::Style, utils::span::SpannedString, views::*, Cursive};
+use super::OnView as _;
+use cursive::{views::*, Cursive};
 
 pub struct TabBar<'c>(&'c mut Cursive);
 on_view! { TabBar => LinearLayout }
@@ -43,29 +40,5 @@ impl<'c> TabBar<'c> {
     }
 }
 
-pub struct Tab<'s> {
-    pub index: usize,
-    pub text: &'s str,
-}
-
-impl<'s> Tab<'s> {
-    pub fn as_styled_string(&self, focused: bool) -> SpannedString<Style> {
-        let TabsConfig { active, inactive } = get_config().tabs;
-
-        if !focused {
-            return SpannedString::default()
-                .append(" ", inactive)
-                .append(self.index.to_string(), inactive)
-                .append(".", inactive)
-                .append(self.text, inactive)
-                .append(" ", inactive);
-        }
-
-        SpannedString::default()
-            .append(" ", active)
-            .append(self.index.to_string(), active)
-            .append(".", active)
-            .append(self.text, active)
-            .append(" ", active)
-    }
-}
+mod tab;
+pub use tab::Tab;

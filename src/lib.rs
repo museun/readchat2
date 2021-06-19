@@ -14,10 +14,7 @@ pub use ui::{build_ui, OnView};
 mod state;
 pub use state::{get_config, CONFIG};
 
-mod config;
-pub use config::{
-    Badges as ConfigBadges, Color as ConfigColor, Config, Highlights, Style as ConfigStyle,
-    TabsConfig,
-};
+pub(crate) mod config;
+pub use config::Config;
 
 mod entry;

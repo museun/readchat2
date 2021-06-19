@@ -9,7 +9,7 @@ use cursive::{
 
 use twitchchat::{messages::Privmsg, twitch::BadgeKind};
 
-use crate::{get_config, ui::SpannedAppender, Config, ConfigBadges, Highlights};
+use crate::{get_config, ui::SpannedAppender, Config};
 
 /// NOTE: this must remain in this order for Iterator::max to work
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
@@ -29,7 +29,7 @@ pub enum Badge {
 
 impl Badge {
     fn as_spanned_string(&self) -> SpannedString<cursive::theme::Style> {
-        let ConfigBadges {
+        let crate::config::Badges {
             partner,
             vip,
             premium,
@@ -153,7 +153,7 @@ impl Entry {
     }
 
     pub(crate) fn contains_keywords(&self) -> bool {
-        let Highlights { keywords, .. } = &get_config().highlights;
+        let crate::config::Highlights { keywords, .. } = &get_config().highlights;
 
         self.data.split_whitespace().any(|s| {
             // keywords
