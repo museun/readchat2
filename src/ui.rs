@@ -66,6 +66,7 @@ pub fn build_ui() -> impl View {
         screens.add_active_screen(status_view().with_name(StatusView::name()));
         screens.add_screen(list_view().with_name(MessagesView::name()));
         screens.add_screen(list_view().with_name(LinksView::name()));
+        screens.add_screen(list_view().with_name(HighlightsView::name()));
 
         LinearLayout::new(Orientation::Vertical)
             .child(tab_bar())
@@ -113,21 +114,14 @@ pub trait OnView<'c>: Sized + 'c {
     }
 }
 
-// #[rustfmt::skip]
+#[rustfmt::skip]
 macro_rules! on_view {
     ($name:ident => $view:ty) => {
         impl<'c> OnView<'c> for $name<'c> {
             type View = $view;
-            fn with(cursive: &'c mut Cursive) -> Self {
-                Self(cursive)
-            }
-            fn cursive(&mut self) -> &mut Cursive {
-                &mut self.0
-            }
-            fn name() -> &'static str {
-                static NAME: Lazy<String> = Lazy::new(next_unique_name);
-                &*NAME
-            }
+            fn with(cursive: &'c mut Cursive) -> Self { Self(cursive) }
+            fn cursive(&mut self) -> &mut Cursive { &mut self.0 }
+            fn name() -> &'static str { static NAME: Lazy<String> = Lazy::new(next_unique_name); &*NAME }
         }
     };
 }
@@ -139,26 +133,27 @@ impl<'c> MainScreen<'c> {
     const STATUS_VIEW_INDEX: usize = 0;
     const MESSAGE_VIEW_INDEX: usize = 1;
     const LINKS_VIEW_INDEX: usize = 2;
+    const HIGHLIGHTS_VIEW_INDEX: usize = 3;
 
-    #[track_caller]
     pub fn focus(&mut self, index: usize) {
         self.on(|view| view.set_active_screen(index));
         App::select_tab(self.cursive(), index);
     }
 
-    #[track_caller]
+    pub fn focus_status_view(&mut self) {
+        self.focus(Self::STATUS_VIEW_INDEX)
+    }
+
     pub fn focus_messages_view(&mut self) {
         self.focus(Self::MESSAGE_VIEW_INDEX)
     }
 
-    #[track_caller]
     pub fn focus_links_view(&mut self) {
         self.focus(Self::LINKS_VIEW_INDEX)
     }
 
-    #[track_caller]
-    pub fn focus_status_view(&mut self) {
-        self.focus(Self::STATUS_VIEW_INDEX)
+    pub fn focus_highlights_view(&mut self) {
+        self.focus(Self::HIGHLIGHTS_VIEW_INDEX)
     }
 }
 
@@ -168,11 +163,14 @@ on_view! { MessagesView => ScrollableList }
 pub struct LinksView<'c>(&'c mut Cursive);
 on_view! { LinksView => ScrollableList }
 
+pub struct HighlightsView<'c>(&'c mut Cursive);
+on_view! { HighlightsView => ScrollableList }
+
 pub struct TabBar<'c>(&'c mut Cursive);
 on_view! { TabBar => LinearLayout }
 
 impl<'c> TabBar<'c> {
-    const TABS: [Tab<'static>; 3] = [
+    const TABS: [Tab<'static>; 4] = [
         Tab {
             index: 0,
             text: " Status",
@@ -184,6 +182,10 @@ impl<'c> TabBar<'c> {
         Tab {
             index: 2,
             text: " Links",
+        },
+        Tab {
+            index: 3,
+            text: " Highlights",
         },
     ];
 

@@ -1,4 +1,3 @@
-#![cfg_attr(debug_assertions, allow(dead_code,))]
 use std::sync::{Arc, Mutex};
 
 use readchat2::*;
@@ -64,7 +63,7 @@ fn main() -> anyhow::Result<()> {
     panic_logger::setup();
 
     let config = match std::fs::read(Config::config_path()?) {
-        Ok(data) => Config::from_toml(data)?,
+        Ok(data) => Config::from_yaml(data)?,
         Err(err) if matches!(err.kind(), std::io::ErrorKind::NotFound) => {
             let config_dir = Config::config_dir()?;
             let opt_out = config_dir.join(".no_config_wanted");
@@ -74,9 +73,11 @@ fn main() -> anyhow::Result<()> {
                     Config::config_path()?.to_string_lossy()
                 );
                 eprintln!("if you want to configure the colors / default appearance then:");
-                eprintln!(" 1. mkdir -p $(readchat --print-config-path)");
-                eprintln!(" 2. readchat --print-default-config > $(readchat --print-config-path)");
-                eprintln!(" 3. $EDITOR $(readchat --print-config-path)");
+                eprintln!(" 1. mkdir -p $(readchat2 --print-config-path)");
+                eprintln!(
+                    " 2. readchat2 --print-default-config > $(readchat2 --print-config-path)"
+                );
+                eprintln!(" 3. $EDITOR $(readchat2 --print-config-path)");
 
                 eprintln!();
                 eprintln!("this message will only show once.");
@@ -118,6 +119,7 @@ fn main() -> anyhow::Result<()> {
     cursive.set_global_callback('0', App::focus_status_view);
     cursive.set_global_callback('1', App::focus_messages_view);
     cursive.set_global_callback('2', App::focus_links_view);
+    cursive.set_global_callback('3', App::focus_highlights_view);
 
     cursive.set_global_callback('t', App::toggle_timestamp);
     cursive.set_global_callback('b', App::toggle_badges);

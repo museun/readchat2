@@ -1,3 +1,5 @@
+#![cfg_attr(any(debug_assertions, test), allow(dead_code, unused_variables,))]
+
 pub mod colors;
 
 pub mod panic_logger;
@@ -14,7 +16,7 @@ pub use state::{get_config, CONFIG};
 
 mod config;
 pub use config::{
-    Badges as ConfigBadges, Color as ConfigColor, Config, Style as ConfigStyle, Tabs,
+    Badges as ConfigBadges, Color as ConfigColor, Config, Highlights, Style as ConfigStyle, Tabs,
 };
 
 mod entry;

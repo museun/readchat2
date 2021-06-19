@@ -17,6 +17,10 @@ impl App {
         TabBar::with(cursive).select(index)
     }
 
+    pub fn focus_status_view(cursive: &mut Cursive) {
+        MainScreen::with(cursive).focus_status_view()
+    }
+
     pub fn focus_messages_view(cursive: &mut Cursive) {
         MainScreen::with(cursive).focus_messages_view()
     }
@@ -25,8 +29,8 @@ impl App {
         MainScreen::with(cursive).focus_links_view()
     }
 
-    pub fn focus_status_view(cursive: &mut Cursive) {
-        MainScreen::with(cursive).focus_status_view()
+    pub fn focus_highlights_view(cursive: &mut Cursive) {
+        MainScreen::with(cursive).focus_highlights_view()
     }
 
     pub fn toggle_timestamp(cursive: &mut Cursive) {

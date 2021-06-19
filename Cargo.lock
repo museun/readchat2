@@ -235,6 +235,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "dtoa"
+version = "0.4.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56899898ce76aaf4a0f24d914c97ea6ed976d42fec6ad33fcbb0a1103e07b2b0"
+
+[[package]]
 name = "enum-map"
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -307,12 +313,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e4075386626662786ddb0ec9081e7c7eeb1ba31951f447ca780ef9f5d568189"
 
 [[package]]
-name = "hashbrown"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7afe4a420e3fe79967a00898cc1f4db7c8a49a9333a29f8a4bd76a253d5cd04"
-
-[[package]]
 name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -327,16 +327,6 @@ dependencies = [
  "matches",
  "unicode-bidi",
  "unicode-normalization",
-]
-
-[[package]]
-name = "indexmap"
-version = "1.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "824845a0bf897a9042383849b02c1bc219c2383772efcd5c6f9766fa4b81aef3"
-dependencies = [
- "autocfg",
- "hashbrown",
 ]
 
 [[package]]
@@ -359,6 +349,12 @@ name = "libc"
 version = "0.2.97"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "12b8adadd720df158f4d70dfe7ccc6adb0472d7c55ca83445f6a5ab3e36f8fb6"
+
+[[package]]
+name = "linked-hash-map"
+version = "0.5.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fb9b38af92608140b86b693604b9ffcc5824240a484d1ecd4795bacb2fe88f3"
 
 [[package]]
 name = "lock_api"
@@ -587,7 +583,7 @@ dependencies = [
  "once_cell",
  "pico-args",
  "serde",
- "toml",
+ "serde_yaml",
  "twitchchat",
  "url",
 ]
@@ -641,6 +637,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "serde_yaml"
+version = "0.8.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "15654ed4ab61726bf918a39cb8d98a2e2995b002387807fa6ba58fdf7f59bb23"
+dependencies = [
+ "dtoa",
+ "linked-hash-map",
+ "serde",
+ "yaml-rust",
 ]
 
 [[package]]
@@ -735,16 +743,6 @@ name = "tinyvec_macros"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
-
-[[package]]
-name = "toml"
-version = "0.5.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a31142970826733df8241ef35dc040ef98c679ab14d7c3e54d827099b3acecaa"
-dependencies = [
- "indexmap",
- "serde",
-]
 
 [[package]]
 name = "twitchchat"
@@ -861,3 +859,12 @@ name = "xi-unicode"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a67300977d3dc3f8034dae89778f502b6ba20b269527b3223ba59c0cf393bb8a"
+
+[[package]]
+name = "yaml-rust"
+version = "0.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56c1936c4cc7a1c9ab21a1ebb602eb942ba868cbd44a99cb7cdc5892335e1c85"
+dependencies = [
+ "linked-hash-map",
+]

@@ -9,13 +9,13 @@ use cursive::{
 
 use twitchchat::{messages::Privmsg, twitch::BadgeKind};
 
-use crate::{get_config, ui::SpannedAppender, Config, ConfigBadges};
+use crate::{get_config, ui::SpannedAppender, Config, ConfigBadges, Highlights};
 
 /// NOTE: this must remain in this order for Iterator::max to work
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub enum Badge {
     Partner,
-    VIP,
+    Vip,
     Premium,
     Bits,
     Turbo,
@@ -45,7 +45,7 @@ impl Badge {
 
         match self {
             Self::Partner => SpannedString::styled("partner", partner),
-            Self::VIP => SpannedString::styled("vip", vip),
+            Self::Vip => SpannedString::styled("vip", vip),
             Self::Premium => SpannedString::styled("premium", premium),
             Self::Bits => SpannedString::styled("bits", bits),
             Self::Turbo => SpannedString::styled("turbo", turbo),
@@ -69,7 +69,7 @@ impl Badge {
             BadgeKind::Staff => Self::Staff,
             BadgeKind::Turbo => Self::Turbo,
             BadgeKind::Premium => Self::Premium,
-            BadgeKind::VIP => Self::VIP,
+            BadgeKind::VIP => Self::Vip,
             BadgeKind::Partner => Self::Partner,
             _ => return None,
         };
@@ -96,11 +96,6 @@ impl Entry {
             } = &*get_config();
 
             SpannedString::styled(
-                // XXX: cursive is still calculating the width of the scrollbar even
-                // if its been disabled, so instead of forking it to fix that
-                // padding issue, we'll just adding our own padding so the scrollbar
-                // can still be rendered and not resize the elements in the
-                // LinearView
                 entry.ts.format(&format!("{} ", timestamp_fmt)).to_string(),
                 colors.timestamp,
             )
@@ -157,12 +152,48 @@ impl Entry {
             .any(|url| matches!(url.scheme(), "http" | "https"))
     }
 
+    pub(crate) fn contains_keywords(&self) -> bool {
+        let Highlights { keywords, .. } = &get_config().highlights;
+
+        self.data.split_whitespace().any(|s| {
+            // keywords
+            todo!();
+        })
+    }
+
     pub(crate) fn find_links(&self) -> impl Iterator<Item = String> + '_ {
         self.data
             .split_whitespace()
             .flat_map(url::Url::parse)
             .filter(|url| matches!(url.scheme(), "http" | "https"))
             .map(Into::into)
+    }
+}
+
+#[derive(Default)]
+pub struct UserCache {
+    map: Vec<(String, i64)>,
+}
+
+impl UserCache {
+    pub fn insert(&mut self, name: impl Into<String>, id: i64) {
+        self.map.push((name.into(), id));
+    }
+
+    pub fn contains_id(&self, id: i64) -> bool {
+        self.map.iter().any(|&(_, v)| v == id)
+    }
+
+    pub fn update_name(&mut self, id: i64, name: impl Into<String>) {
+        if let Some((k, _)) = self.map.iter_mut().find(|(_, v)| *v == id) {
+            *k = name.into()
+        } else {
+            self.insert(name, id)
+        }
+    }
+
+    pub fn contains(&self, name: &str) -> bool {
+        self.map.iter().any(|(k, _)| k.eq_ignore_ascii_case(name))
     }
 }
 
