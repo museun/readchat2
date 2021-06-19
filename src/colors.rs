@@ -48,8 +48,6 @@ pub fn choose_color() -> Color {
 }
 
 pub fn default_palette() -> Palette {
-    use std::{array::IntoIter as array_iter, iter::repeat};
-
     const_array! {
         pub PALETTE_COLORS ; PaletteColor [
             PaletteColor::Background,
@@ -66,8 +64,8 @@ pub fn default_palette() -> Palette {
         ]
     }
 
-    array_iter::new(PALETTE_COLORS)
-        .zip(repeat(Color::TerminalDefault))
+    <_>::into_iter(PALETTE_COLORS)
+        .zip(std::iter::repeat(Color::TerminalDefault))
         .fold(Palette::default(), |mut p, (k, v)| {
             p[k] = v;
             p

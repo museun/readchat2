@@ -62,7 +62,7 @@ impl App {
                 timestamps, badges, ..
             } = *get_config();
 
-            std::array::IntoIter::new([
+            <_>::into_iter([
                 ("timestamp", timestamps), //
                 ("badge", badges),
             ])

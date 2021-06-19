@@ -32,7 +32,7 @@ pub fn build_ui() -> impl View {
 
     fn tab_bar() -> impl View {
         BoxedView::boxed(
-            std::array::IntoIter::new(TabBar::TABS)
+            <_>::into_iter(TabBar::TABS)
                 .map(|s| s.as_styled_string(false))
                 .map(TextView::new)
                 .map(|tv| PaddedView::new(Margins::lr(0, 1), tv))

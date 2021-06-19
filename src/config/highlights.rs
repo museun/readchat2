@@ -8,7 +8,7 @@ pub struct Highlights {
 
 impl Default for Highlights {
     fn default() -> Self {
-        let keywords = std::array::IntoIter::new([
+        let keywords = <_>::into_iter([
             ("Rust", false, Color::RUSTACEAN_ORANGE, Effects::bold()),
             ("Twitch", true, Color::TWITCH_PURPLE, Effects::empty()),
         ])
