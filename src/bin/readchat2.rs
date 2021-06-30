@@ -4,6 +4,7 @@ use readchat2::*;
 
 pub struct Args {
     channel: Option<String>,
+    simulated: bool,
 }
 
 impl Args {
@@ -16,6 +17,7 @@ USAGE:
 FLAGS:
     -h, --help                  show the help messages
     -v, --version               show the current version
+    --simulated                 shows a simulated chat
     --print-default-config      print the default toml configuration
     --print-config-path         print the default configuration path
     "#;
@@ -41,9 +43,9 @@ FLAGS:
             println!("{}", Config::config_path()?.to_string_lossy());
             std::process::exit(0);
         }
-
+        let simulated = args.contains("--simulated");
         let channel = args.finish().pop().map(|s| s.to_string_lossy().to_string());
-        Ok(Self { channel })
+        Ok(Self { channel, simulated })
     }
 }
 
@@ -58,7 +60,7 @@ fn new_cursive() -> cursive::CursiveRunnable {
 }
 
 fn main() -> anyhow::Result<()> {
-    let Args { channel } = Args::parse()?;
+    let Args { channel, simulated } = Args::parse()?;
 
     panic_logger::setup();
 
@@ -94,20 +96,25 @@ fn main() -> anyhow::Result<()> {
         Err(err) => return Err(err.into()),
     };
 
-    let channel = match (
-        channel.filter(|s| !s.is_empty()),
-        config.channel.clone().filter(|s| !s.is_empty()),
-    ) {
-        (Some(left), ..) => left,
-        (.., Some(right)) => right,
-        _ => {
-            eprintln!("please provide a channel: readchat2 <channel>");
-            eprintln!("alternatively add it to the configuration file");
-            std::process::exit(1);
-        }
-    };
+    let chat_mode = if simulated {
+        ChatMode::Simulated
+    } else {
+        let channel = match (
+            channel.filter(|s| !s.is_empty()),
+            config.channel.clone().filter(|s| !s.is_empty()),
+        ) {
+            (Some(left), ..) => left,
+            (.., Some(right)) => right,
+            _ => {
+                eprintln!("please provide a channel: readchat2 <channel>");
+                eprintln!("alternatively add it to the configuration file");
+                std::process::exit(1);
+            }
+        };
+        assert!(!channel.is_empty(), "channel shouldn't be empty");
 
-    assert!(!channel.is_empty(), "channel shouldn't be empty");
+        ChatMode::Real(channel)
+    };
 
     readchat2::CONFIG
         .set(Arc::new(Mutex::new(config)))
@@ -127,7 +134,7 @@ fn main() -> anyhow::Result<()> {
     App::focus_status_view(&mut cursive);
 
     let sink = cursive.cb_sink().clone();
-    twitch::connect(&*channel)?(sink);
+    chat_mode.connect()?(sink);
     cursive.run();
     Ok(())
 }

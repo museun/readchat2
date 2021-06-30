@@ -13,14 +13,14 @@ use twitchchat::{
 
 use crate::{app::App, entry::Entry};
 
-enum Activity {
+pub(crate) enum Activity {
     Pong,
     Ping(String),
     Message,
 }
 
 #[derive(Debug)]
-enum Update {
+pub(crate) enum Update {
     Raw(String),
     Append(Entry),
     Connecting,
@@ -31,7 +31,7 @@ enum Update {
     Joined(String),
 }
 
-fn read_loop<I, R>(
+pub(crate) fn read_loop<I, R>(
     stream: I,
     channel: &str,
     updates: flume::Sender<Update>,
@@ -43,7 +43,6 @@ where
 {
     let decoder = Decoder::new(&*stream);
     let mut encoder = Encoder::new(&*stream);
-
     let mut our_name = String::new();
 
     for message in decoder
@@ -97,7 +96,7 @@ where
     Ok(())
 }
 
-fn connect_inner() -> anyhow::Result<TcpStream> {
+pub fn connect() -> anyhow::Result<TcpStream> {
     let config = UserConfig::builder()
         .anonymous()
         .enable_all_capabilities()
@@ -110,7 +109,7 @@ fn connect_inner() -> anyhow::Result<TcpStream> {
         .map_err(Into::into)
 }
 
-fn inner_loop(
+pub(crate) fn inner_loop(
     mut encoder: twitchchat::Encoder<&TcpStream>,
     updates_rx: flume::Receiver<Update>,
     activity_rx: flume::Receiver<Activity>,
@@ -196,36 +195,4 @@ fn inner_loop(
     }
 
     Ok(())
-}
-
-pub fn connect(channel: &str) -> anyhow::Result<impl FnOnce(cursive::CbSink)> {
-    let (updates_tx, updates_rx) = flume::unbounded();
-    updates_tx.send(Update::Connecting)?;
-
-    let stream = connect_inner().map(std::sync::Arc::new)?;
-    let channel = channel.to_string();
-
-    let cb = move |sink: cursive::CbSink| {
-        let (activity_tx, activity_rx) = flume::unbounded();
-
-        let read_handle = std::thread::spawn({
-            let channel = channel.to_string();
-            let stream = stream.clone();
-            move || read_loop(stream, &channel, updates_tx, activity_tx)
-        });
-
-        std::thread::spawn::<_, anyhow::Result<()>>({
-            let stream = stream.clone();
-            move || {
-                let stream = stream;
-                inner_loop(Encoder::new(&*stream), updates_rx, activity_rx, sink)?;
-                let mut encoder = Encoder::new(&*stream);
-                let _ = encoder.encode(raw("QUIT :leaving"));
-                let _ = read_handle.join();
-                Ok(())
-            }
-        });
-    };
-
-    Ok(cb)
 }

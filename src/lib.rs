@@ -3,7 +3,7 @@
 pub mod colors;
 
 pub mod panic_logger;
-pub mod twitch;
+mod twitch;
 
 mod app;
 pub use app::App;
@@ -18,3 +18,8 @@ pub(crate) mod config;
 pub use config::{Color, Config};
 
 mod entry;
+
+mod simulated;
+
+mod connect;
+pub use connect::ChatMode;
