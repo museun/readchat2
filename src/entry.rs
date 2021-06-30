@@ -11,74 +11,8 @@ use twitchchat::{messages::Privmsg, twitch::BadgeKind};
 
 use crate::{get_config, ui::SpannedAppender, Config};
 
-/// NOTE: this must remain in this order for Iterator::max to work
-#[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
-pub enum Badge {
-    Partner,
-    Vip,
-    Premium,
-    Bits,
-    Turbo,
-    Subscriber,
-    Moderator,
-    Broadcaster,
-    GlobalMod,
-    Staff,
-    Admin,
-}
-
-impl Badge {
-    fn as_spanned_string(&self) -> SpannedString<cursive::theme::Style> {
-        let config = get_config();
-
-        let crate::config::Badges {
-            partner,
-            vip,
-            premium,
-            bits,
-            turbo,
-            subscriber,
-            moderator,
-            broadcaster,
-            global_mod,
-            staff,
-            admin,
-        } = config.colors.badges;
-        let mapping = &config.badge_names;
-
-        match self {
-            Self::Partner => SpannedString::styled(&mapping.partner, partner),
-            Self::Vip => SpannedString::styled(&mapping.vip, vip),
-            Self::Premium => SpannedString::styled(&mapping.premium, premium),
-            Self::Bits => SpannedString::styled(&mapping.bits, bits),
-            Self::Turbo => SpannedString::styled(&mapping.turbo, turbo),
-            Self::Subscriber => SpannedString::styled(&mapping.subscriber, subscriber),
-            Self::Moderator => SpannedString::styled(&mapping.moderator, moderator),
-            Self::Broadcaster => SpannedString::styled(&mapping.broadcaster, broadcaster),
-            Self::GlobalMod => SpannedString::styled(&mapping.global_mod, global_mod),
-            Self::Staff => SpannedString::styled(&mapping.staff, staff),
-            Self::Admin => SpannedString::styled(&mapping.admin, admin),
-        }
-    }
-
-    const fn from_badge_kind(bk: &BadgeKind<'_>) -> Option<Self> {
-        let badge = match bk {
-            BadgeKind::Admin => Self::Admin,
-            BadgeKind::Bits => Self::Bits,
-            BadgeKind::Broadcaster => Self::Broadcaster,
-            BadgeKind::GlobalMod => Self::GlobalMod,
-            BadgeKind::Moderator => Self::Moderator,
-            BadgeKind::Subscriber => Self::Subscriber,
-            BadgeKind::Staff => Self::Staff,
-            BadgeKind::Turbo => Self::Turbo,
-            BadgeKind::Premium => Self::Premium,
-            BadgeKind::VIP => Self::Vip,
-            BadgeKind::Partner => Self::Partner,
-            _ => return None,
-        };
-        Some(badge)
-    }
-}
+mod badge;
+pub use badge::Badge;
 
 #[derive(Clone, Debug)]
 pub struct Entry {
