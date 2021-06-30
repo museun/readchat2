@@ -10,7 +10,7 @@ use cursive::{
 use twitchchat::messages::Privmsg;
 
 use crate::{
-    config::{Keyword, Style},
+    config::{Highlights, Keyword, Style},
     get_config,
     ui::SpannedAppender,
     Config,
@@ -66,8 +66,8 @@ impl Entry {
     }
 
     pub(crate) fn as_message_view(&self) -> Option<impl View> {
-        let keywords = &*get_config().highlights.keywords;
-        self.as_row_entry(keywords)
+        let Highlights { mention, keywords } = &get_config().highlights;
+        self.as_row_entry(&**keywords, *mention)
     }
 
     pub(crate) fn as_links_view(&self) -> Option<impl View> {
@@ -87,19 +87,24 @@ impl Entry {
     }
 
     pub(crate) fn as_highlights_view(&self) -> Option<impl View> {
-        let keywords = &*get_config().highlights.keywords;
-        if !self.contains_keywords(keywords) {
+        let Highlights { mention, keywords } = &get_config().highlights;
+        let name = &*crate::state::get_channel();
+
+        if !self.contains_keywords(keywords) && !self.contains_mention(name) {
             return None;
         }
 
-        self.as_row_entry(keywords)
+        self.as_row_entry(&**keywords, *mention)
     }
 
-    fn as_row_entry(&self, keywords: &[Keyword]) -> Option<impl View> {
+    fn as_row_entry(&self, keywords: &[Keyword], style: Style) -> Option<impl View> {
+        let name = &*crate::state::get_channel();
         Some(
             LinearLayout::new(Orientation::Vertical)
                 .child(Self::as_header_view(self))
-                .child(TextView::new(self.highlight_keywords(keywords)))
+                .child(TextView::new(
+                    self.highlight_keywords(keywords, name, style),
+                ))
                 .child(TextView::new("\n")),
         )
     }
@@ -109,8 +114,10 @@ impl Entry {
     pub(crate) fn highlight_keywords(
         &self,
         keywords: &[Keyword],
+        name: &str,
+        style: Style,
     ) -> SpannedString<cursive::theme::Style> {
-        self.find_keywords(keywords).fold(
+        let mut s = self.find_keywords(keywords).fold(
             SpannedString::<cursive::theme::Style>::new(),
             |mut s, part| {
                 if !s.is_empty() {
@@ -121,7 +128,15 @@ impl Entry {
                     Part::NotMatched(_start, text) => s.append_plain(text),
                 }
             },
-        )
+        );
+
+        for span in s.spans_attr_mut() {
+            if trim_punc(span.content).eq_ignore_ascii_case(name) {
+                *span.attr = span.attr.combine(style);
+            }
+        }
+
+        s
     }
 
     pub(crate) fn contains_links(&self) -> bool {
@@ -154,11 +169,27 @@ impl Entry {
             .flatten()
     }
 
+    pub(crate) fn contains_mention(&self, name: &str) -> bool {
+        self.data
+            .split_whitespace()
+            .any(|s| trim_punc(s).eq_ignore_ascii_case(name))
+    }
+
     pub(crate) fn contains_keywords(&self, keywords: &[Keyword]) -> bool {
         self.data
             .split_whitespace()
             .any(|s| keywords.iter().any(|kw| kw == s))
     }
+}
+
+fn trim_punc(mut input: &str) -> &str {
+    while input.starts_with('@') {
+        input = &input[1..]
+    }
+    while input.ends_with(|c: char| c.is_ascii_punctuation()) {
+        input = &input[..input.len() - 1]
+    }
+    input
 }
 
 impl<'a> From<Privmsg<'a>> for Entry {

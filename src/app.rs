@@ -107,6 +107,9 @@ impl App {
     }
 
     pub fn on_joined(cursive: &mut Cursive, channel: String) {
+        crate::state::CONNECTED_CHANNEL
+            .set(channel.clone().into())
+            .expect("single initialize of the channel state");
         StatusView::with(cursive).append(Status::Joined(channel));
         StatusView::with(cursive).append(Status::Information);
     }
