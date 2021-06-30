@@ -7,7 +7,7 @@ use std::{
 
 type Color = cursive::theme::Color;
 
-const IPSUM: [&str; 150] = include!("../etc/ipsum.inc");
+const IPSUM: [&str; 89] = include!("../etc/ipsum.inc");
 const ANIMALS: [&str; 25] = include!("../etc/animals.inc");
 const ADJECTIVES: [&str; 23] = include!("../etc/adjectives.inc");
 
