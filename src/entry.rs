@@ -106,7 +106,7 @@ impl Entry {
             let tv = TextView::new(name).no_wrap().full_width();
             let mut sub = LinearLayout::new(Orientation::Horizontal).child(tv);
             if let Some(badge) = entry.badge {
-                let tv = TextView::new(badge.as_spanned_string().append_plain(" "));
+                let tv = TextView::new(badge.as_spanned_string().append_plain(" ")).no_wrap();
                 sub.add_child(HideableView::new(tv).with_name("badge"))
             }
             sub
