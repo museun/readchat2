@@ -35,7 +35,7 @@ FLAGS:
 
 ## config:
 
-you can view the default config here: [`./src/config/default.yaml`]()
+you can view the default config here: [`src/config/default.yaml`](src/config/default.yaml)
 
 ---
 
