@@ -16,6 +16,12 @@ tabs:
     bg: ~
     effects: ~
 
+tab_names:
+  status: "Status"
+  messages: "Messages"
+  links: "Links"
+  highlights: "Highlights"
+
 colors:
   timestamp:
     fg: "#FF00FF"

@@ -4,7 +4,7 @@ mod colors;
 pub use colors::Colors;
 
 mod tabs;
-pub use tabs::Tabs;
+pub use tabs::{TabNameMapping, Tabs};
 
 mod badges;
 pub use badges::Badges;
@@ -28,6 +28,7 @@ pub struct Config {
     pub badges: bool,
     pub timestamp_fmt: String,
     pub tabs: Tabs,
+    pub tab_names: TabNameMapping,
     pub colors: Colors,
     pub highlights: Highlights,
 }
@@ -35,7 +36,7 @@ pub struct Config {
 impl Default for Config {
     // TODO this should maybe default from the file to ensure they are in sync
     fn default() -> Self {
-        let (channel, tabs, colors, highlights) = <_>::default();
+        let (channel, tabs, tab_names, colors, highlights) = <_>::default();
 
         Self {
             timestamps: true,
@@ -44,6 +45,7 @@ impl Default for Config {
 
             channel,
             tabs,
+            tab_names,
             colors,
             highlights,
         }

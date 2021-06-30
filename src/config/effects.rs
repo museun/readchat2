@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use cursive::theme::Effect;
 
 macro_rules! make_effects {
@@ -76,13 +78,28 @@ impl<'de> serde::Deserialize<'de> for Effects {
                 formatter.write_str("a string")
             }
 
+            fn visit_some<D>(self, de: D) -> Result<Self::Value, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                use serde::de::Deserialize as _;
+                self.visit_str(&*<Cow<'_, str>>::deserialize(de)?)
+            }
+
+            fn visit_none<E>(self) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(Self::Value::default())
+            }
+
             fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
             where
                 E: serde::de::Error,
             {
-                v.split(SEPERATOR)
-                    .map(str::trim)
-                    .try_fold(Effects::default(), |mut eff, key| {
+                v.split(SEPERATOR).map(str::trim).try_fold(
+                    Self::Value::default(),
+                    |mut eff, key| {
                         *match key {
                             "simple" => &mut eff.simple,
                             "reverse" => &mut eff.reverse,
@@ -91,10 +108,13 @@ impl<'de> serde::Deserialize<'de> for Effects {
                             "strikethrough" => &mut eff.strikethrough,
                             "underline" => &mut eff.underline,
                             "blink" => &mut eff.blink,
+                            // XXX: a `serde_yaml` hack because its not figuring out `Some|None|str`
+                            "~" => return Ok(eff),
                             e => return Err(E::custom(&format!("unknown effect: {}", e))),
                         } = true;
                         Ok(eff)
-                    })
+                    },
+                )
             }
         }
 

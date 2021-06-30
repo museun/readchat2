@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 use readchat2::*;
 
@@ -117,7 +117,7 @@ fn main() -> anyhow::Result<()> {
     };
 
     readchat2::CONFIG
-        .set(Arc::new(Mutex::new(config)))
+        .set(Arc::new(RwLock::new(config)))
         .expect("single initialization of the global configuration");
 
     let mut cursive = new_cursive();

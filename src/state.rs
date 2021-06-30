@@ -1,13 +1,21 @@
 use crate::Config;
 use once_cell::sync::OnceCell;
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-pub static CONFIG: OnceCell<Arc<Mutex<Config>>> = OnceCell::new();
+pub static CONFIG: OnceCell<Arc<RwLock<Config>>> = OnceCell::new();
 
-pub fn get_config() -> MutexGuard<'static, Config> {
+pub fn get_config_mut() -> RwLockWriteGuard<'static, Config> {
     CONFIG
         .get()
         .expect("config must be initialized")
-        .lock()
+        .write()
+        .unwrap()
+}
+
+pub fn get_config() -> RwLockReadGuard<'static, Config> {
+    CONFIG
+        .get()
+        .expect("config must be initialized")
+        .read()
         .unwrap()
 }

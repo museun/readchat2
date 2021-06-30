@@ -1,6 +1,6 @@
 use cursive::{views::HideableView, Cursive, View};
 
-use crate::{get_config, Config};
+use crate::{get_config_mut, Config};
 
 pub trait FindView {
     fn seek_and_toggle<T, F>(&mut self, key: &str, extract: F)
@@ -16,7 +16,7 @@ impl FindView for Cursive {
         F: Fn(&mut Config) -> &mut bool,
     {
         let show = {
-            let config = &mut *get_config();
+            let config = &mut *get_config_mut();
             let show = extract(config);
             *show = !*show;
             *show

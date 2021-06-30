@@ -15,8 +15,6 @@ pub fn build_ui() -> impl View {
             .scroll_y(true)
             .scroll_strategy(ScrollStrategy::StickToBottom)
             .boxed()
-        // .show_scrollbars(false);
-        // list_view.get_scroller_mut().set_scrollbar_padding((0, 0));
     }
 
     fn status_view() -> BoxedView {
@@ -29,7 +27,9 @@ pub fn build_ui() -> impl View {
     }
 
     fn tab_bar() -> impl View {
-        <_>::into_iter(TabBar::TABS)
+        get_config()
+            .tab_names
+            .as_tabs()
             .map(|s| s.as_styled_string(false))
             .map(TextView::new)
             .map(|tv| PaddedView::new(Margins::lr(0, 1), tv))
@@ -106,3 +106,5 @@ use limited_list_view::LimitedListView;
 
 mod spanned_appender;
 pub(crate) use spanned_appender::*;
+
+use crate::get_config;

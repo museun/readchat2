@@ -16,7 +16,7 @@ impl<'s> Tab<'s> {
             return SpannedString::default()
                 .append(" ", inactive)
                 .append(self.index.to_string(), inactive)
-                .append(".", inactive)
+                .append(". ", inactive)
                 .append(self.text, inactive)
                 .append(" ", inactive);
         }
@@ -24,7 +24,7 @@ impl<'s> Tab<'s> {
         SpannedString::default()
             .append(" ", active)
             .append(self.index.to_string(), active)
-            .append(".", active)
+            .append(". ", active)
             .append(self.text, active)
             .append(" ", active)
     }
