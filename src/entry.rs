@@ -8,6 +8,7 @@ use cursive::{
 };
 
 use twitchchat::messages::Privmsg;
+use unicode_width::UnicodeWidthChar;
 
 use crate::{
     config::{Highlights, Keyword, Style},
@@ -101,22 +102,20 @@ impl Entry {
         Some(
             LinearLayout::new(Orientation::Vertical)
                 .child(Self::as_header_view(self))
-                .child(TextView::new(
-                    self.highlight_keywords(keywords, name, style),
-                ))
+                .child(TextView::new(self.highlight(keywords, name, style)))
                 .child(TextView::new("\n")),
         )
     }
 }
 
 impl Entry {
-    pub(crate) fn highlight_keywords(
+    pub(crate) fn highlight(
         &self,
         keywords: &[Keyword],
         name: &str,
         style: Style,
     ) -> SpannedString<cursive::theme::Style> {
-        let mut s = self.find_keywords(keywords).fold(
+        let mut string = self.find_keywords(keywords).fold(
             SpannedString::<cursive::theme::Style>::new(),
             |mut s, part| {
                 if !s.is_empty() {
@@ -129,13 +128,13 @@ impl Entry {
             },
         );
 
-        for span in s.spans_attr_mut() {
+        for span in string.spans_attr_mut() {
             if trim_punc(span.content).eq_ignore_ascii_case(name) {
                 *span.attr = span.attr.combine(style);
             }
         }
 
-        s
+        string
     }
 
     pub(crate) fn contains_links(&self) -> bool {
@@ -159,6 +158,7 @@ impl Entry {
     ) -> impl Iterator<Item = Part<'b>> + 'b {
         index_split_iter(&self.data)
             .map(move |(i, s)| {
+                let s = trim_punc(s);
                 keywords
                     .iter()
                     .find_map(|kw| (kw == s).then(|| (i, s, kw.style)))
@@ -239,7 +239,15 @@ fn index_split_iter(input: &str) -> impl Iterator<Item = (usize, &str)> + '_ {
                 let pos = *pos.borrow();
                 input
                     .get(pos..)
-                    .map(|c| (pos, c.chars().take_while(|c| !c.is_whitespace()).count()))
+                    .map(|c| {
+                        (
+                            pos,
+                            c.chars()
+                                .take_while(|c| !c.is_whitespace())
+                                .flat_map(|c| c.width())
+                                .sum::<usize>(),
+                        )
+                    })
                     .map(|(start, end)| (start, &input[start..start + end]))
             }
         })

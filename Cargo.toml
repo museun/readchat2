@@ -18,4 +18,5 @@ pico-args  = "0.4.2"
 serde      = { version = "1.0.126", features = ["derive"] }
 serde_yaml = "0.8.17"
 twitchchat = "0.14.8"
+unicode-width = "0.1.8"
 url        = "2.2.2"
