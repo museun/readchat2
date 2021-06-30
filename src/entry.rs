@@ -20,7 +20,6 @@ mod badge;
 pub use badge::Badge;
 
 mod user_cache;
-use user_cache::UserCache;
 
 #[derive(Clone, Debug)]
 pub struct Entry {
