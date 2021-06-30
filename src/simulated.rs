@@ -20,8 +20,8 @@ pub fn simulated_twitch_chat() -> anyhow::Result<(String, Arc<TcpStream>)> {
 }
 
 struct Chatter {
-    name: String,
-    color: Color,
+    name: Arc<str>,
+    display_color: String,
 }
 
 impl Chatter {
@@ -39,15 +39,16 @@ impl Chatter {
         );
 
         let color = crate::colors::DEFAULT_COLORS.choose().copied().unwrap();
-        Self { name, color }
-    }
-
-    fn display_color(&self) -> String {
-        match self.color {
+        let display_color = match color {
             Color::Rgb(r, g, b) => {
                 format!("#{r:02X}{g:02X}{b:02X}", r = r, g = g, b = b)
             }
             _ => unreachable!(),
+        };
+
+        Self {
+            name: name.into(),
+            display_color,
         }
     }
 
@@ -80,7 +81,7 @@ fn garbage_out(io: &mut dyn Write, chatters: &[Chatter]) -> anyhow::Result<()> {
         write!(
             io,
             "@color={color} :{name}!{name}@{name} PRIVMSG #testing :{msg}\r\n",
-            color = chatter.display_color(),
+            color = chatter.display_color,
             name = chatter.name,
             msg = chatter.speak()
         )?;
@@ -95,7 +96,7 @@ fn twitch_chat_experience() -> anyhow::Result<SocketAddr> {
     let mut chatters = Vec::with_capacity(cap);
     let mut seen = HashSet::new();
     for chatter in std::iter::repeat_with(Chatter::new) {
-        if seen.insert(chatter.name.clone()) {
+        if seen.insert(Arc::clone(&chatter.name)) {
             chatters.push(chatter)
         }
         if chatters.len() == cap {
