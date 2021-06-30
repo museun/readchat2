@@ -33,6 +33,12 @@ pub struct Keyword {
     pub style: Style,
 }
 
+impl PartialEq<str> for Keyword {
+    fn eq(&self, input: &str) -> bool {
+        (!self.case_sensitive && self.name.eq_ignore_ascii_case(input)) || self.name == input
+    }
+}
+
 impl Keyword {
     pub fn new(name: impl ToString) -> Self {
         Self {
