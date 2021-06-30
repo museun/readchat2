@@ -31,7 +31,7 @@ pub fn build_ui() -> impl View {
             .tab_names
             .as_tabs()
             .map(|s| s.as_styled_string(false))
-            .map(TextView::new)
+            .map(TextView::new) // TODO figure out how to register events for this
             .map(|tv| PaddedView::new(Margins::lr(0, 1), tv))
             .fold(
                 LinearLayout::new(Orientation::Horizontal),

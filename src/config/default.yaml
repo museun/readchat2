@@ -73,6 +73,19 @@ colors:
       bg: ~
       effects: ~
 
+badge_names:
+  admin: "admin"
+  bits: "bits"
+  broadcaster: "broadcaster"
+  global_mod: "global_mod"
+  moderator: "moderator"
+  partner: "partner"
+  premium: "premium"
+  staff: "staff"
+  subscriber: "subscriber"
+  turbo: "turbo"
+  vip: "vip"
+
 highlights:
   mentions:
     fg: "#FF0000"

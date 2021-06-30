@@ -29,6 +29,8 @@ pub enum Badge {
 
 impl Badge {
     fn as_spanned_string(&self) -> SpannedString<cursive::theme::Style> {
+        let config = get_config();
+
         let crate::config::Badges {
             partner,
             vip,
@@ -41,20 +43,21 @@ impl Badge {
             global_mod,
             staff,
             admin,
-        } = get_config().colors.badges;
+        } = config.colors.badges;
+        let mapping = &config.badge_names;
 
         match self {
-            Self::Partner => SpannedString::styled("partner", partner),
-            Self::Vip => SpannedString::styled("vip", vip),
-            Self::Premium => SpannedString::styled("premium", premium),
-            Self::Bits => SpannedString::styled("bits", bits),
-            Self::Turbo => SpannedString::styled("turbo", turbo),
-            Self::Subscriber => SpannedString::styled("sub", subscriber),
-            Self::Moderator => SpannedString::styled("mod", moderator),
-            Self::Broadcaster => SpannedString::styled("broadcaster", broadcaster),
-            Self::GlobalMod => SpannedString::styled("global_mod", global_mod),
-            Self::Staff => SpannedString::styled("staff", staff),
-            Self::Admin => SpannedString::styled("admin", admin),
+            Self::Partner => SpannedString::styled(&mapping.partner, partner),
+            Self::Vip => SpannedString::styled(&mapping.vip, vip),
+            Self::Premium => SpannedString::styled(&mapping.premium, premium),
+            Self::Bits => SpannedString::styled(&mapping.bits, bits),
+            Self::Turbo => SpannedString::styled(&mapping.turbo, turbo),
+            Self::Subscriber => SpannedString::styled(&mapping.subscriber, subscriber),
+            Self::Moderator => SpannedString::styled(&mapping.moderator, moderator),
+            Self::Broadcaster => SpannedString::styled(&mapping.broadcaster, broadcaster),
+            Self::GlobalMod => SpannedString::styled(&mapping.global_mod, global_mod),
+            Self::Staff => SpannedString::styled(&mapping.staff, staff),
+            Self::Admin => SpannedString::styled(&mapping.admin, admin),
         }
     }
 

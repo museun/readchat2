@@ -7,7 +7,7 @@ mod tabs;
 pub use tabs::{TabNameMapping, Tabs};
 
 mod badges;
-pub use badges::Badges;
+pub use badges::{BadgeNameMapping, Badges};
 
 mod style;
 pub use style::Style;
@@ -26,6 +26,7 @@ pub struct Config {
     pub channel: Option<String>,
     pub timestamps: bool,
     pub badges: bool,
+    pub badge_names: BadgeNameMapping,
     pub timestamp_fmt: String,
     pub tabs: Tabs,
     pub tab_names: TabNameMapping,
@@ -36,13 +37,14 @@ pub struct Config {
 impl Default for Config {
     // TODO this should maybe default from the file to ensure they are in sync
     fn default() -> Self {
-        let (channel, tabs, tab_names, colors, highlights) = <_>::default();
+        let (channel, tabs, tab_names, badge_names, colors, highlights) = <_>::default();
 
         Self {
             timestamps: true,
             badges: true,
             timestamp_fmt: "%X".into(),
 
+            badge_names,
             channel,
             tabs,
             tab_names,
