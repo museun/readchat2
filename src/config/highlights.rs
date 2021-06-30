@@ -2,7 +2,7 @@ use super::{Color, Effects, Style};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Highlights {
-    pub mentions: Style,
+    pub mention: Style,
     pub keywords: Vec<Keyword>,
 }
 
@@ -20,7 +20,7 @@ impl Default for Highlights {
         .collect();
 
         Self {
-            mentions: Style::fg(Color::RED).with_effects(Effects::bold()),
+            mention: Style::fg(Color::RED).with_effects(Effects::bold()),
             keywords,
         }
     }

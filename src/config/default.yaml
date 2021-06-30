@@ -87,7 +87,7 @@ badge_names:
   vip: "vip"
 
 highlights:
-  mentions:
+  mention:
     fg: "#FF0000"
     bg: ~
     effects: bold
