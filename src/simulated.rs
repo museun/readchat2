@@ -8,8 +8,8 @@ use std::{
 type Color = cursive::theme::Color;
 
 const IPSUM: [&str; 150] = include!("../etc/ipsum.inc");
-const ANIMALS: [&str; 291] = include!("../etc/animals.inc");
-const ADJECTIVES: [&str; 140] = include!("../etc/adjectives.inc");
+const ANIMALS: [&str; 25] = include!("../etc/animals.inc");
+const ADJECTIVES: [&str; 23] = include!("../etc/adjectives.inc");
 
 pub fn simulated_twitch_chat() -> anyhow::Result<(String, Arc<TcpStream>)> {
     const SIMULATED_CHANNEL: &str = "#testing";
@@ -34,7 +34,7 @@ impl Chatter {
 
         name.extend(
             std::iter::repeat_with(|| fastrand::u8(b'0'..=b'9'))
-                .take(fastrand::usize(0..5))
+                .take(fastrand::usize(0..3))
                 .map(|c| c as char),
         );
 
