@@ -5,6 +5,7 @@ pub struct TabBar<'c>(&'c mut Cursive);
 on_view! { TabBar => LinearLayout }
 
 impl<'c> TabBar<'c> {
+    // TODO allow this to be customizable
     pub(crate) const TABS: [Tab<'static>; 4] = [
         Tab {
             index: 0,

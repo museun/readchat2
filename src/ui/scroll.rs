@@ -14,4 +14,7 @@ where
     }
 }
 
-impl<'c, T, E> ScrollToBottom<'c, T> for E where E: OnView<'c, View = ScrollView<T>> {}
+#[rustfmt::skip]
+impl<'c, T, E> ScrollToBottom<'c, T> for E
+where
+    E: OnView<'c, View = ScrollView<T>> {}

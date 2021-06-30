@@ -61,6 +61,8 @@ impl std::ops::BitOr<Effect> for Effects {
     }
 }
 
+const SEPERATOR: char = '|';
+
 impl<'de> serde::Deserialize<'de> for Effects {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -78,7 +80,7 @@ impl<'de> serde::Deserialize<'de> for Effects {
             where
                 E: serde::de::Error,
             {
-                v.split('|')
+                v.split(SEPERATOR)
                     .map(str::trim)
                     .try_fold(Effects::default(), |mut eff, key| {
                         *match key {
@@ -110,7 +112,9 @@ impl serde::Serialize for Effects {
                 .filter_map(|(k, v)| v.then(|| k))
                 .fold(String::new(), |mut a, c| {
                     if !a.is_empty() {
-                        a.push_str(" | ");
+                        a.push(' ');
+                        a.push(SEPERATOR);
+                        a.push(' ');
                     }
                     a.push_str(c.as_ref());
                     a

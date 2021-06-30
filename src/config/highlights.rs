@@ -12,8 +12,8 @@ impl Default for Highlights {
             ("Rust", false, Color::RUSTACEAN_ORANGE, Effects::bold()),
             ("Twitch", true, Color::TWITCH_PURPLE, Effects::empty()),
         ])
-        .map(|(n, case_sensitive, fg, effects)| Keyword {
-            name: n.to_string(),
+        .map(|(name, case_sensitive, fg, effects)| Keyword {
+            name: name.to_string(),
             case_sensitive,
             style: Style::fg(fg).with_effects(effects),
         })
@@ -31,4 +31,25 @@ pub struct Keyword {
     pub name: String,
     pub case_sensitive: bool,
     pub style: Style,
+}
+
+impl Keyword {
+    pub fn new(name: impl ToString) -> Self {
+        Self {
+            name: name.to_string(),
+            case_sensitive: false,
+            style: <_>::default(),
+        }
+    }
+
+    pub fn case_sensitive(self) -> Self {
+        Self {
+            case_sensitive: !self.case_sensitive,
+            ..self
+        }
+    }
+
+    pub fn style(self, style: Style) -> Self {
+        Self { style, ..self }
+    }
 }

@@ -3,45 +3,42 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use cursive::{
     direction::Orientation,
     traits::{Nameable, Scrollable, View},
-    view::{scroll::Scroller, Margins, ScrollStrategy},
+    view::{Margins, ScrollStrategy},
     views::*,
 };
 
 pub fn build_ui() -> impl View {
     fn list_view() -> BoxedView {
-        let mut list_view = LimitedListView::limited_to(50)
+        LimitedListView::limited_to(50)
             .scrollable()
             .scroll_x(false)
             .scroll_y(true)
             .scroll_strategy(ScrollStrategy::StickToBottom)
-            .show_scrollbars(false);
-        list_view.get_scroller_mut().set_scrollbar_padding((0, 0));
-        BoxedView::boxed(list_view)
+            .boxed()
+        // .show_scrollbars(false);
+        // list_view.get_scroller_mut().set_scrollbar_padding((0, 0));
     }
 
     fn status_view() -> BoxedView {
-        BoxedView::boxed(
-            ListView::new()
-                .scrollable()
-                .scroll_x(false)
-                .scroll_y(true)
-                .scroll_strategy(ScrollStrategy::StickToBottom)
-                .show_scrollbars(true),
-        )
+        ListView::new()
+            .scrollable()
+            .scroll_x(false)
+            .scroll_y(true)
+            .scroll_strategy(ScrollStrategy::StickToBottom)
+            .boxed()
     }
 
     fn tab_bar() -> impl View {
-        BoxedView::boxed(
-            <_>::into_iter(TabBar::TABS)
-                .map(|s| s.as_styled_string(false))
-                .map(TextView::new)
-                .map(|tv| PaddedView::new(Margins::lr(0, 1), tv))
-                .fold(
-                    LinearLayout::new(Orientation::Horizontal),
-                    |layout, view| layout.child(view),
-                ),
-        )
-        .with_name(TabBar::name())
+        <_>::into_iter(TabBar::TABS)
+            .map(|s| s.as_styled_string(false))
+            .map(TextView::new)
+            .map(|tv| PaddedView::new(Margins::lr(0, 1), tv))
+            .fold(
+                LinearLayout::new(Orientation::Horizontal),
+                |layout, view| layout.child(view),
+            )
+            .boxed()
+            .with_name(TabBar::name())
     }
 
     fn screens_view() -> impl View {
@@ -53,7 +50,7 @@ pub fn build_ui() -> impl View {
 
         LinearLayout::new(Orientation::Vertical)
             .child(tab_bar())
-            .child(BoxedView::boxed(screens).with_name(MainScreen::name()))
+            .child(screens.boxed().with_name(MainScreen::name()))
     }
 
     screens_view()
@@ -64,6 +61,19 @@ pub(crate) fn next_unique_name() -> String {
     thread_local! { static COUNTER: AtomicUsize = AtomicUsize::new(0); }
     let n = std::thread::LocalKey::with(&COUNTER, move |c| c.fetch_add(1, Ordering::SeqCst));
     format!("{}_view_{}", PREFIX, n)
+}
+
+trait IntoBoxedView {
+    fn boxed(self) -> BoxedView;
+}
+
+impl<T> IntoBoxedView for T
+where
+    T: View,
+{
+    fn boxed(self) -> cursive::views::BoxedView {
+        BoxedView::boxed(self)
+    }
 }
 
 #[macro_use]

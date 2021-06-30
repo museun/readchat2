@@ -170,11 +170,11 @@ impl View for LimitedListView {
             return EventResult::Ignored;
         }
 
-        let y = self
+        let y: usize = self
             .heights
             .iter()
             .take(self.heights.len() - self.focus)
-            .sum::<usize>();
+            .sum();
         let offset = (1, y);
 
         let result = self.list[self.focus].on_event(event.relativized(offset));

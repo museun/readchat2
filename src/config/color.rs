@@ -13,11 +13,19 @@ impl Color {
     pub(crate) const RED: Self = Self(0xFF, 0x00, 0x00);
     pub(crate) const WHITE: Self = Self(0xFF, 0xFF, 0xFF);
     pub(crate) const MAGENTA: Self = Self(0xFF, 0x00, 0xFF);
+    pub(crate) const TEAL: Self = Self(0x00, 0x92, 0x92);
     pub(crate) const RUSTACEAN_ORANGE: Self = Self(0xf5, 0x7c, 0x00);
     pub(crate) const TWITCH_PURPLE: Self = Self(0x91, 0x46, 0xff);
 
     pub(crate) const fn default_fg() -> Self {
         Self::WHITE
+    }
+}
+
+impl From<Color> for cursive::theme::Style {
+    fn from(Color(r, g, b): Color) -> Self {
+        let color = cursive::theme::Color::Rgb(r, g, b);
+        color.into()
     }
 }
 

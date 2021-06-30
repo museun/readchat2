@@ -1,6 +1,7 @@
 use std::{
     io::{Read, Write},
     net::TcpStream,
+    ops::Deref,
     time::{Duration, Instant, SystemTime},
 };
 
@@ -37,12 +38,14 @@ fn read_loop<I, R>(
     activity: flume::Sender<Activity>,
 ) -> anyhow::Result<()>
 where
-    I: std::ops::Deref<Target = R> + Clone + Send + 'static,
+    I: Deref<Target = R> + Clone + Send + 'static,
     for<'i> &'i R: Read + Write + Send + Sync,
 {
-    let (decoder, mut encoder) = (Decoder::new(&*stream), Encoder::new(&*stream));
+    let decoder = Decoder::new(&*stream);
+    let mut encoder = Encoder::new(&*stream);
 
-    let mut our_name = None;
+    let mut our_name = String::new();
+
     for message in decoder
         .into_iter()
         .flatten()
@@ -54,7 +57,7 @@ where
         match message {
             Ready(msg) => {
                 updates.send(Update::Connected)?;
-                our_name.replace(msg.username().to_owned());
+                our_name = msg.username().to_string();
 
                 updates.send(Update::Joining(channel.to_string()))?;
                 encoder.encode(join(channel))?;
@@ -62,7 +65,7 @@ where
                 activity.send(Activity::Message)?;
             }
 
-            Join(msg) if our_name.as_deref().filter(|&c| c == msg.name()).is_some() => {
+            Join(msg) if our_name == msg.name() => {
                 updates.send(Update::Joined(channel.to_string()))?;
                 activity.send(Activity::Message)?;
             }

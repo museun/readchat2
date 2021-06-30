@@ -15,6 +15,6 @@ mod state;
 pub use state::{get_config, CONFIG};
 
 pub(crate) mod config;
-pub use config::Config;
+pub use config::{Color, Config};
 
 mod entry;
