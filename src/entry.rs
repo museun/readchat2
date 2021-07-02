@@ -9,7 +9,6 @@ use cursive::{
 };
 
 use twitchchat::messages::Privmsg;
-use unicode_width::UnicodeWidthChar;
 
 use crate::{
     config::{Highlights, Keyword, Style},
@@ -124,8 +123,8 @@ impl Entry {
                     s = s.append_plain(" ");
                 }
                 match part {
-                    Part::Matched(_start, text, style) => s.append(text, style),
-                    Part::NotMatched(_start, text) => s.append_plain(text),
+                    Part::Matched(text, style) => s.append(text, style),
+                    Part::NotMatched(text) => s.append_plain(text),
                 }
             },
         );
@@ -158,14 +157,15 @@ impl Entry {
         &'b self,
         keywords: &'a [Keyword],
     ) -> impl Iterator<Item = Part<'b>> + 'b {
-        index_split_iter(&self.data)
-            .map(move |(i, s)| {
-                let s = trim_punc(s);
+        self.data
+            .split_ascii_whitespace()
+            .map(move |s| {
+                let trimmed = trim_punc(s);
                 keywords
                     .iter()
-                    .find_map(|kw| (kw == s).then(|| (i, s, kw.style)))
-                    .map(|(i, n, s)| Part::Matched(i, n, s))
-                    .or_else(|| Some(Part::NotMatched(i, s)))
+                    .find_map(|kw| (kw == trimmed).then(|| (trimmed, kw.style)))
+                    .map(|(n, s)| Part::Matched(n, s))
+                    .or_else(|| Some(Part::NotMatched(s)))
             })
             .flatten()
     }
@@ -215,44 +215,6 @@ impl<'a> From<Privmsg<'a>> for Entry {
 }
 
 pub(crate) enum Part<'a> {
-    Matched(usize, &'a str, Style),
-    NotMatched(usize, &'a str),
-}
-
-fn index_split_iter(input: &str) -> impl Iterator<Item = (usize, &str)> + '_ {
-    use std::{cell::RefCell, rc::Rc};
-    let pos = Rc::new(RefCell::new(0_usize));
-    let mut iter = input
-        .char_indices()
-        .filter_map(|(i, e)| e.is_whitespace().then(|| i));
-
-    std::iter::from_fn({
-        let pos = Rc::clone(&pos);
-        move || {
-            let (start, end) = (*pos.borrow(), iter.next()?);
-            *pos.borrow_mut() = end + 1;
-            Some((start, &input[start..end]))
-        }
-    })
-    .chain(
-        std::iter::once_with({
-            let pos = Rc::clone(&pos);
-            move || {
-                let pos = *pos.borrow();
-                input
-                    .get(pos..)
-                    .map(|c| {
-                        (
-                            pos,
-                            c.chars()
-                                .take_while(|c| !c.is_whitespace())
-                                .flat_map(|c| c.width())
-                                .sum::<usize>(),
-                        )
-                    })
-                    .map(|(start, end)| (start, &input[start..start + end]))
-            }
-        })
-        .flatten(),
-    )
+    Matched(&'a str, Style),
+    NotMatched(&'a str),
 }
