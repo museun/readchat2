@@ -38,10 +38,8 @@ impl Entry {
                 ..
             } = &*get_config();
 
-            SpannedString::styled(
-                entry.ts.format(&format!("{}", timestamp_fmt)).to_string(),
-                colors.timestamp,
-            )
+            let ts = entry.ts.format(timestamp_fmt).to_string();
+            SpannedString::styled(ts, colors.timestamp)
         };
 
         let left = {
@@ -157,17 +155,14 @@ impl Entry {
         &'b self,
         keywords: &'a [Keyword],
     ) -> impl Iterator<Item = Part<'b>> + 'b {
-        self.data
-            .split_ascii_whitespace()
-            .map(move |s| {
-                let trimmed = trim_punc(s);
-                keywords
-                    .iter()
-                    .find_map(|kw| (kw == trimmed).then(|| (trimmed, kw.style)))
-                    .map(|(n, s)| Part::Matched(n, s))
-                    .or_else(|| Some(Part::NotMatched(s)))
-            })
-            .flatten()
+        self.data.split_ascii_whitespace().map(move |s| {
+            let trimmed = trim_punc(s);
+            keywords
+                .iter()
+                .find_map(|kw| (kw == trimmed).then(|| (trimmed, kw.style)))
+                .map(|(n, s)| Part::Matched(n, s))
+                .unwrap_or_else(|| Part::NotMatched(s))
+        })
     }
 
     pub(crate) fn contains_mention(&self, name: &str) -> bool {
@@ -214,7 +209,7 @@ impl<'a> From<Privmsg<'a>> for Entry {
     }
 }
 
-pub(crate) enum Part<'a> {
+pub enum Part<'a> {
     Matched(&'a str, Style),
     NotMatched(&'a str),
 }

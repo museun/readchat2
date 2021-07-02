@@ -13,14 +13,14 @@ use twitchchat::{
 
 use crate::{app::App, entry::Entry};
 
-pub(crate) enum Activity {
+pub enum Activity {
     Pong,
     Ping(String),
     Message,
 }
 
 #[derive(Debug)]
-pub(crate) enum Update {
+pub enum Update {
     Raw(String),
     Append(Entry),
     Connecting,
@@ -31,7 +31,7 @@ pub(crate) enum Update {
     Joined(String),
 }
 
-pub(crate) fn read_loop<I, R>(
+pub fn read_loop<I, R>(
     stream: I,
     channel: &str,
     updates: flume::Sender<Update>,
