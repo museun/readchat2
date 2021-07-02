@@ -3,6 +3,7 @@ use cursive::{
     theme::Color,
     traits::{Boxable, Nameable},
     utils::span::SpannedString,
+    view::Margins,
     views::*,
     View,
 };
@@ -49,7 +50,10 @@ impl Entry {
             let tv = TextView::new(name).no_wrap().full_width();
             let mut sub = LinearLayout::new(Orientation::Horizontal).child(tv);
             if let Some(badge) = entry.badge {
-                let tv = TextView::new(badge.as_spanned_string()).no_wrap();
+                let tv = PaddedView::new(
+                    Margins::lr(0, 1),
+                    TextView::new(badge.as_spanned_string()).no_wrap(),
+                );
                 sub.add_child(HideableView::new(tv).with_name("badge"))
             }
             sub
