@@ -1,10 +1,14 @@
-use std::sync::{Arc, RwLock};
+use std::{
+    path::PathBuf,
+    sync::{Arc, RwLock},
+};
 
 use readchat2::*;
 
 pub struct Args {
     channel: Option<String>,
     simulated: bool,
+    transcribe: bool,
 }
 
 impl Args {
@@ -17,6 +21,7 @@ USAGE:
 FLAGS:
     -h, --help                  show the help messages
     -v, --version               show the current version
+    --transcribe                logs all messages to disk
     --simulated                 shows a simulated chat
     --print-default-config      print the default toml configuration
     --print-config-path         print the default configuration path
@@ -44,8 +49,13 @@ FLAGS:
             std::process::exit(0);
         }
         let simulated = args.contains("--simulated");
+        let transcribe = args.contains("--transcribe");
         let channel = args.finish().pop().map(|s| s.to_string_lossy().to_string());
-        Ok(Self { channel, simulated })
+        Ok(Self {
+            channel,
+            simulated,
+            transcribe,
+        })
     }
 }
 
@@ -60,7 +70,11 @@ fn new_cursive() -> cursive::CursiveRunnable {
 }
 
 fn main() -> anyhow::Result<()> {
-    let Args { channel, simulated } = Args::parse()?;
+    let Args {
+        channel,
+        simulated,
+        transcribe,
+    } = Args::parse()?;
 
     panic_logger::setup();
 
@@ -94,6 +108,24 @@ fn main() -> anyhow::Result<()> {
             Config::default()
         }
         Err(err) => return Err(err.into()),
+    };
+
+    type Logger = Box<dyn std::io::Write + Send + Sync + 'static>;
+
+    let logger: Logger = if channel.as_ref().filter(|_| transcribe).is_some() {
+        let name = PathBuf::from(format!(
+            "{}-{}",
+            channel.as_deref().expect("channel must exist"),
+            std::time::SystemTime::now().elapsed()?.as_secs()
+        ))
+        .with_extension(".log");
+        let file = std::fs::OpenOptions::new()
+            .create(true)
+            .write(true)
+            .open(name)?;
+        Box::new(file) as _
+    } else {
+        Box::new(std::io::sink()) as _
     };
 
     let chat_mode = if simulated {
@@ -134,7 +166,7 @@ fn main() -> anyhow::Result<()> {
     App::focus_status_view(&mut cursive);
 
     let sink = cursive.cb_sink().clone();
-    chat_mode.connect()?(sink);
+    chat_mode.connect(logger)?(sink);
     cursive.run();
     Ok(())
 }
