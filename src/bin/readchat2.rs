@@ -1,7 +1,4 @@
-use std::{
-    path::PathBuf,
-    sync::{Arc, RwLock},
-};
+use std::sync::{Arc, RwLock};
 
 use readchat2::*;
 
@@ -149,20 +146,26 @@ fn main() -> anyhow::Result<()> {
         ChatMode::Real(channel)
     };
 
+    let config = Arc::new(RwLock::new(config));
+
     readchat2::CONFIG
-        .set(Arc::new(RwLock::new(config)))
+        .set(Arc::clone(&config))
         .expect("single initialization of the global configuration");
 
     let mut cursive = new_cursive();
-    cursive.set_global_callback('q', App::quit);
 
-    cursive.set_global_callback('0', App::focus_status_view);
-    cursive.set_global_callback('1', App::focus_messages_view);
-    cursive.set_global_callback('2', App::focus_links_view);
-    cursive.set_global_callback('3', App::focus_highlights_view);
-
-    cursive.set_global_callback('t', App::toggle_timestamp);
-    cursive.set_global_callback('b', App::toggle_badges);
+    for (action, binding) in &config.read().unwrap().keybinds.map {
+        let func = match action {
+            Action::FocusStatusView => App::focus_status_view,
+            Action::FocusMessagesView => App::focus_messages_view,
+            Action::FocusLinksView => App::focus_links_view,
+            Action::FocusHighlightsView => App::focus_highlights_view,
+            Action::Quit => App::quit,
+            Action::ToggleTimestamp => App::toggle_timestamp,
+            Action::ToggleBadges => App::toggle_badges,
+        };
+        cursive.set_global_callback(*binding, func);
+    }
 
     App::focus_status_view(&mut cursive);
 

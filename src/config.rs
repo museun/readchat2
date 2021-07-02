@@ -23,6 +23,9 @@ pub use color::Color;
 mod highlights;
 pub use highlights::{Highlights, Keyword};
 
+mod keybinds;
+pub use keybinds::{Action, Input, KeyBinds};
+
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Config {
     pub channel: Option<String>,
@@ -34,12 +37,13 @@ pub struct Config {
     pub tab_names: TabNameMapping,
     pub colors: Colors,
     pub highlights: Highlights,
+    pub keybinds: KeyBinds,
 }
 
 impl Default for Config {
     // TODO this should maybe default from the file to ensure they are in sync
     fn default() -> Self {
-        let (channel, tabs, tab_names, badge_names, colors, highlights) = <_>::default();
+        let (channel, tabs, tab_names, badge_names, colors, highlights, keybinds) = <_>::default();
 
         Self {
             timestamps: true,
@@ -52,6 +56,7 @@ impl Default for Config {
             tab_names,
             colors,
             highlights,
+            keybinds,
         }
     }
 }
