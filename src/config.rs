@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use anyhow::Context as _;
 
 mod colors;
@@ -60,12 +62,18 @@ impl Config {
             .with_context(|| anyhow::anyhow!("cannot parse config"))
     }
 
-    pub fn config_path() -> anyhow::Result<std::path::PathBuf> {
+    pub fn config_path() -> anyhow::Result<PathBuf> {
         Self::config_dir().map(|p| p.join("config.yaml"))
     }
 
-    pub fn config_dir() -> anyhow::Result<std::path::PathBuf> {
+    pub fn config_dir() -> anyhow::Result<PathBuf> {
         dirs::config_dir()
+            .map(|f| f.join("museun").join("readchat2"))
+            .with_context(|| anyhow::anyhow!("system does not have a configuration directory"))
+    }
+
+    pub fn data_dir() -> anyhow::Result<PathBuf> {
+        dirs::data_dir()
             .map(|f| f.join("museun").join("readchat2"))
             .with_context(|| anyhow::anyhow!("system does not have a configuration directory"))
     }

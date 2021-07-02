@@ -113,12 +113,13 @@ fn main() -> anyhow::Result<()> {
     type Logger = Box<dyn std::io::Write + Send + Sync + 'static>;
 
     let logger: Logger = if channel.as_ref().filter(|_| transcribe).is_some() {
-        let name = PathBuf::from(format!(
-            "{}-{}",
-            channel.as_deref().expect("channel must exist"),
-            std::time::SystemTime::now().elapsed()?.as_secs()
-        ))
-        .with_extension(".log");
+        let name = Config::data_dir()?
+            .join(format!(
+                "{}-{}",
+                channel.as_deref().expect("channel must exist"),
+                std::time::SystemTime::now().elapsed()?.as_secs()
+            ))
+            .with_extension(".log");
         let file = std::fs::OpenOptions::new()
             .create(true)
             .write(true)
