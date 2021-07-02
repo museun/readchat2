@@ -20,8 +20,6 @@ use crate::{
 mod badge;
 pub use badge::Badge;
 
-mod user_cache;
-
 #[derive(Clone, Debug)]
 pub struct Entry {
     pub name: String,
@@ -253,23 +251,4 @@ fn index_split_iter(input: &str) -> impl Iterator<Item = (usize, &str)> + '_ {
         })
         .flatten(),
     )
-}
-
-fn index_split(input: &str) -> Vec<(usize, &str)> {
-    let mut data = vec![];
-    let mut pos = 0;
-    for index in input
-        .char_indices()
-        .filter_map(|(i, e)| e.is_whitespace().then(|| i))
-    {
-        data.push((pos, &input[pos..index]));
-        pos = index + 1;
-    }
-    if let Some(end) = input
-        .get(pos..)
-        .map(|c| c.chars().take_while(|c| !c.is_whitespace()).count())
-    {
-        data.push((pos, &input[pos..pos + end]))
-    }
-    data
 }
