@@ -3,7 +3,7 @@ use twitchchat::twitch::BadgeKind;
 
 use crate::get_config;
 
-/// NOTE: this must remain in this order for Iterator::max to work
+// NOTE: this must remain in this order for Iterator::max to work
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub enum Badge {
     Partner,

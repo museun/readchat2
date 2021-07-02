@@ -1,7 +1,7 @@
 use cursive::{
     traits::Finder,
     view::{ScrollStrategy, Selector},
-    views::{HideableView, TextView},
+    views::{HideableView, PaddedView, TextView},
     Cursive, View,
 };
 
@@ -38,7 +38,7 @@ impl App {
     }
 
     pub fn toggle_badges(cursive: &mut Cursive) {
-        cursive.seek_and_toggle::<TextView, _>("badge", |s| &mut s.badges)
+        cursive.seek_and_toggle::<PaddedView<TextView>, _>("badge", |s| &mut s.badges)
     }
 
     pub fn append_raw(cursive: &mut Cursive, raw: String) {

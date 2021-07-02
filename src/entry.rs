@@ -3,6 +3,7 @@ use cursive::{
     theme::Color,
     traits::{Boxable, Nameable},
     utils::span::SpannedString,
+    view::Margins,
     views::*,
     View,
 };
@@ -18,8 +19,6 @@ use crate::{
 
 mod badge;
 pub use badge::Badge;
-
-mod user_cache;
 
 #[derive(Clone, Debug)]
 pub struct Entry {
@@ -39,10 +38,8 @@ impl Entry {
                 ..
             } = &*get_config();
 
-            SpannedString::styled(
-                entry.ts.format(&format!("{}", timestamp_fmt)).to_string(),
-                colors.timestamp,
-            )
+            let ts = entry.ts.format(timestamp_fmt).to_string();
+            SpannedString::styled(ts, colors.timestamp)
         };
 
         let left = {
@@ -50,7 +47,10 @@ impl Entry {
             let tv = TextView::new(name).no_wrap().full_width();
             let mut sub = LinearLayout::new(Orientation::Horizontal).child(tv);
             if let Some(badge) = entry.badge {
-                let tv = TextView::new(badge.as_spanned_string()).no_wrap();
+                let tv = PaddedView::new(
+                    Margins::lr(0, 1),
+                    TextView::new(badge.as_spanned_string()).no_wrap(),
+                );
                 sub.add_child(HideableView::new(tv).with_name("badge"))
             }
             sub
@@ -101,41 +101,39 @@ impl Entry {
         Some(
             LinearLayout::new(Orientation::Vertical)
                 .child(Self::as_header_view(self))
-                .child(TextView::new(
-                    self.highlight_keywords(keywords, name, style),
-                ))
+                .child(TextView::new(self.highlight(keywords, name, style)))
                 .child(TextView::new("\n")),
         )
     }
 }
 
 impl Entry {
-    pub(crate) fn highlight_keywords(
+    pub(crate) fn highlight(
         &self,
         keywords: &[Keyword],
         name: &str,
         style: Style,
     ) -> SpannedString<cursive::theme::Style> {
-        let mut s = self.find_keywords(keywords).fold(
+        let mut string = self.find_keywords(keywords).fold(
             SpannedString::<cursive::theme::Style>::new(),
             |mut s, part| {
                 if !s.is_empty() {
                     s = s.append_plain(" ");
                 }
                 match part {
-                    Part::Matched(_start, text, style) => s.append(text, style),
-                    Part::NotMatched(_start, text) => s.append_plain(text),
+                    Part::Matched(text, style) => s.append(text, style),
+                    Part::NotMatched(text) => s.append_plain(text),
                 }
             },
         );
 
-        for span in s.spans_attr_mut() {
+        for span in string.spans_attr_mut() {
             if trim_punc(span.content).eq_ignore_ascii_case(name) {
                 *span.attr = span.attr.combine(style);
             }
         }
 
-        s
+        string
     }
 
     pub(crate) fn contains_links(&self) -> bool {
@@ -157,15 +155,14 @@ impl Entry {
         &'b self,
         keywords: &'a [Keyword],
     ) -> impl Iterator<Item = Part<'b>> + 'b {
-        index_split_iter(&self.data)
-            .map(move |(i, s)| {
-                keywords
-                    .iter()
-                    .find_map(|kw| (kw == s).then(|| (i, s, kw.style)))
-                    .map(|(i, n, s)| Part::Matched(i, n, s))
-                    .or_else(|| Some(Part::NotMatched(i, s)))
-            })
-            .flatten()
+        self.data.split_ascii_whitespace().map(move |s| {
+            let trimmed = trim_punc(s);
+            keywords
+                .iter()
+                .find_map(|kw| (kw == trimmed).then(|| (trimmed, kw.style)))
+                .map(|(n, s)| Part::Matched(n, s))
+                .unwrap_or_else(|| Part::NotMatched(s))
+        })
     }
 
     pub(crate) fn contains_mention(&self, name: &str) -> bool {
@@ -212,56 +209,7 @@ impl<'a> From<Privmsg<'a>> for Entry {
     }
 }
 
-pub(crate) enum Part<'a> {
-    Matched(usize, &'a str, Style),
-    NotMatched(usize, &'a str),
-}
-
-fn index_split_iter(input: &str) -> impl Iterator<Item = (usize, &str)> + '_ {
-    use std::{cell::RefCell, rc::Rc};
-    let pos = Rc::new(RefCell::new(0_usize));
-    let mut iter = input
-        .char_indices()
-        .filter_map(|(i, e)| e.is_whitespace().then(|| i));
-
-    std::iter::from_fn({
-        let pos = Rc::clone(&pos);
-        move || {
-            let (start, end) = (*pos.borrow(), iter.next()?);
-            *pos.borrow_mut() = end + 1;
-            Some((start, &input[start..end]))
-        }
-    })
-    .chain(
-        std::iter::once_with({
-            let pos = Rc::clone(&pos);
-            move || {
-                let pos = *pos.borrow();
-                input
-                    .get(pos..)
-                    .map(|c| (pos, c.chars().take_while(|c| !c.is_whitespace()).count()))
-                    .map(|(start, end)| (start, &input[start..start + end]))
-            }
-        })
-        .flatten(),
-    )
-}
-
-fn index_split(input: &str) -> Vec<(usize, &str)> {
-    let mut data = vec![];
-    let mut pos = 0;
-    for index in input
-        .char_indices()
-        .filter_map(|(i, e)| e.is_whitespace().then(|| i))
-    {
-        data.push((pos, &input[pos..index]));
-        pos = index + 1;
-    }
-    if let Some(end) = input
-        .get(pos..)
-        .map(|c| c.chars().take_while(|c| !c.is_whitespace()).count())
-    {
-        data.push((pos, &input[pos..pos + end]))
-    }
-    data
+pub enum Part<'a> {
+    Matched(&'a str, Style),
+    NotMatched(&'a str),
 }

@@ -1,10 +1,26 @@
-# syntax  { fg = "#hex"   , bg = "#hex" , bold = bool }
-# default { fg = "#FFFFFF", bg = <unset>, bold = false }
-
 channel: ~
 timestamps: true
 badges: true
 timestamp_fmt: "%X"
+
+# syntax "modifiers-char"
+# modifiers:
+# s : shift, c : ctrl, a : alt
+# combine modifiers with a hyphen: c-a-2 is 'ctrl + alt + 2'
+
+# examples:
+# so: "s-a" would mean 'shift + a'
+# a shorthand for the above is simply: 'A'
+# f0 through f12 is supported. s-f2 is 'shift + f12'
+
+keybinds:
+  focus_status_view: "0"
+  focus_messages_view: "1"
+  focus_links_view: "2"
+  focus_highlights_view: "3"
+  quit: "q"
+  toggle_timestamp: "t"
+  toggle_badges: "b"
 
 tabs:
   active:

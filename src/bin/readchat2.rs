@@ -5,6 +5,7 @@ use readchat2::*;
 pub struct Args {
     channel: Option<String>,
     simulated: bool,
+    transcribe: bool,
 }
 
 impl Args {
@@ -17,6 +18,7 @@ USAGE:
 FLAGS:
     -h, --help                  show the help messages
     -v, --version               show the current version
+    --transcribe                logs all messages to disk
     --simulated                 shows a simulated chat
     --print-default-config      print the default toml configuration
     --print-config-path         print the default configuration path
@@ -44,8 +46,13 @@ FLAGS:
             std::process::exit(0);
         }
         let simulated = args.contains("--simulated");
+        let transcribe = args.contains("--transcribe");
         let channel = args.finish().pop().map(|s| s.to_string_lossy().to_string());
-        Ok(Self { channel, simulated })
+        Ok(Self {
+            channel,
+            simulated,
+            transcribe,
+        })
     }
 }
 
@@ -60,7 +67,11 @@ fn new_cursive() -> cursive::CursiveRunnable {
 }
 
 fn main() -> anyhow::Result<()> {
-    let Args { channel, simulated } = Args::parse()?;
+    let Args {
+        channel,
+        simulated,
+        transcribe,
+    } = Args::parse()?;
 
     panic_logger::setup();
 
@@ -96,6 +107,25 @@ fn main() -> anyhow::Result<()> {
         Err(err) => return Err(err.into()),
     };
 
+    type Logger = Box<dyn std::io::Write + Send + Sync + 'static>;
+
+    let logger: Logger = if channel.as_ref().filter(|_| transcribe).is_some() {
+        let name = Config::data_dir()?
+            .join(format!(
+                "{}-{}",
+                channel.as_deref().expect("channel must exist"),
+                std::time::SystemTime::now().elapsed()?.as_secs()
+            ))
+            .with_extension(".log");
+        let file = std::fs::OpenOptions::new()
+            .create(true)
+            .write(true)
+            .open(name)?;
+        Box::new(file) as _
+    } else {
+        Box::new(std::io::sink()) as _
+    };
+
     let chat_mode = if simulated {
         ChatMode::Simulated
     } else {
@@ -116,25 +146,31 @@ fn main() -> anyhow::Result<()> {
         ChatMode::Real(channel)
     };
 
+    let config = Arc::new(RwLock::new(config));
+
     readchat2::CONFIG
-        .set(Arc::new(RwLock::new(config)))
+        .set(Arc::clone(&config))
         .expect("single initialization of the global configuration");
 
     let mut cursive = new_cursive();
-    cursive.set_global_callback('q', App::quit);
 
-    cursive.set_global_callback('0', App::focus_status_view);
-    cursive.set_global_callback('1', App::focus_messages_view);
-    cursive.set_global_callback('2', App::focus_links_view);
-    cursive.set_global_callback('3', App::focus_highlights_view);
-
-    cursive.set_global_callback('t', App::toggle_timestamp);
-    cursive.set_global_callback('b', App::toggle_badges);
+    for (action, binding) in &config.read().unwrap().keybinds.map {
+        let func = match action {
+            Action::FocusStatusView => App::focus_status_view,
+            Action::FocusMessagesView => App::focus_messages_view,
+            Action::FocusLinksView => App::focus_links_view,
+            Action::FocusHighlightsView => App::focus_highlights_view,
+            Action::Quit => App::quit,
+            Action::ToggleTimestamp => App::toggle_timestamp,
+            Action::ToggleBadges => App::toggle_badges,
+        };
+        cursive.set_global_callback(*binding, func);
+    }
 
     App::focus_status_view(&mut cursive);
 
     let sink = cursive.cb_sink().clone();
-    chat_mode.connect()?(sink);
+    chat_mode.connect(logger)?(sink);
     cursive.run();
     Ok(())
 }

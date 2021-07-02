@@ -126,11 +126,9 @@ fn wait_for_join(mut io: &TcpStream) -> anyhow::Result<()> {
     const JOIN_MESSAGE: &str = include!("../etc/join.inc");
     const READY: [&str; 5] = include!("../etc/ready.inc");
 
-    READY
-        .iter()
-        .map(|s| s.as_bytes())
-        .map(|line| io.write_all(line).map_err(Into::into))
-        .collect::<anyhow::Result<()>>()?;
+    for line in READY {
+        io.write_all(line.as_bytes())?;
+    }
 
     for line in BufReader::new(io).lines().flatten() {
         if line == "JOIN #testing" {

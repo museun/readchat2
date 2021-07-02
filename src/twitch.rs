@@ -13,14 +13,14 @@ use twitchchat::{
 
 use crate::{app::App, entry::Entry};
 
-pub(crate) enum Activity {
+pub enum Activity {
     Pong,
     Ping(String),
     Message,
 }
 
 #[derive(Debug)]
-pub(crate) enum Update {
+pub enum Update {
     Raw(String),
     Append(Entry),
     Connecting,
@@ -31,7 +31,7 @@ pub(crate) enum Update {
     Joined(String),
 }
 
-pub(crate) fn read_loop<I, R>(
+pub fn read_loop<I, R>(
     stream: I,
     channel: &str,
     updates: flume::Sender<Update>,
@@ -109,11 +109,12 @@ pub fn connect() -> anyhow::Result<TcpStream> {
         .map_err(Into::into)
 }
 
-pub(crate) fn inner_loop(
+pub fn inner_loop(
     mut encoder: twitchchat::Encoder<&TcpStream>,
     updates_rx: flume::Receiver<Update>,
     activity_rx: flume::Receiver<Activity>,
     sink: cursive::CbSink,
+    mut logger: impl Write + Send + Sync + 'static,
 ) -> anyhow::Result<()> {
     const WINDOW: Duration = Duration::from_secs(15);
     const TIMEOUT: Duration = Duration::from_secs(30);
@@ -150,7 +151,16 @@ pub(crate) fn inner_loop(
             .recv(&updates_rx, |update| match update {
                 Ok(update) => {
                     let cb: Box<dyn FnOnce(&mut cursive::Cursive) + Send> = match update {
-                        Update::Raw(raw) => Box::new(|c| App::append_raw(c, raw)),
+                        Update::Raw(raw) => {
+                            if logger
+                                .write_all(raw.as_bytes())
+                                .and_then(|_| logger.flush())
+                                .is_err()
+                            {
+                                return Step::Exit;
+                            }
+                            Box::new(|c| App::append_raw(c, raw))
+                        }
                         Update::Append(entry) => Box::new(|c| App::append_entry(c, entry)),
                         Update::Connecting => Box::new(App::on_connecting),
                         Update::Connected => Box::new(App::on_connected),

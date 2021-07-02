@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use twitchchat::{commands::raw, Encoder};
 
 use crate::twitch::Update;
@@ -8,7 +10,10 @@ pub enum ChatMode {
 }
 
 impl ChatMode {
-    pub fn connect(self) -> anyhow::Result<impl FnOnce(cursive::CbSink)> {
+    pub fn connect(
+        self,
+        logger: impl Write + Send + Sync + 'static,
+    ) -> anyhow::Result<impl FnOnce(cursive::CbSink)> {
         let (updates_tx, updates_rx) = flume::unbounded();
         updates_tx.send(Update::Connecting)?;
 
@@ -38,6 +43,7 @@ impl ChatMode {
                         updates_rx,
                         activity_rx,
                         sink,
+                        logger,
                     )?;
                     let _ = Encoder::new(&*stream).encode(raw("QUIT :leaving"));
                     let _ = read_handle.join();

@@ -17,7 +17,7 @@
 ## usage:
 
 ```
-readchat2/0.2.0
+readchat2/0.3.0
 
 USAGE:
     readchat2 [flags] <channel>
@@ -25,6 +25,7 @@ USAGE:
 FLAGS:
     -h, --help                  show the help messages
     -v, --version               show the current version
+    --transcribe                logs all messages to disk
     --simulated                 shows a simulated chat
     --print-default-config      print the default toml configuration
     --print-config-path         print the default configuration path
